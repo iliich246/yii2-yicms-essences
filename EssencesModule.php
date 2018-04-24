@@ -3,15 +3,15 @@
 namespace Iliich246\YicmsEssences;
 
 use Yii;
-use Iliich246\YicmsCommon\Base\AbstractConfigurableModule;
 use Iliich246\YicmsCommon\Base\YicmsModuleInterface;
+use Iliich246\YicmsCommon\Base\AbstractConfigurableModule;
 
 /**
  * Class EssenceModule
  *
  * @author iliich246 <iliich246@gmail.com>
  */
-class EssenceModule extends AbstractConfigurableModule implements YicmsModuleInterface
+class EssencesModule extends AbstractConfigurableModule implements YicmsModuleInterface
 {
     /** @inheritdoc */
     public $controllerMap = [
