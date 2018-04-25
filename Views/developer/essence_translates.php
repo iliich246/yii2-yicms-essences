@@ -2,8 +2,8 @@
 
 use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\bootstrap\ActiveForm;
 use yii\widgets\Pjax;
+use yii\bootstrap\ActiveForm;
 use Iliich246\YicmsCommon\Widgets\SimpleTabsTranslatesWidget;
 
 /** @var $this \yii\web\View */
@@ -12,6 +12,34 @@ use Iliich246\YicmsCommon\Widgets\SimpleTabsTranslatesWidget;
 
 
 $this->title = "Translations of essence names";
+
+$js = <<<JS
+;(function() {
+    var pjaxContainer   = $('#edit-essences-names-container');
+    var pjaxContainerId = '#edit-essences-names-container';
+
+    $(pjaxContainer).on('pjax:success', function() {
+        $(".alert").hide().slideDown(500).fadeTo(500, 1);
+
+        window.setTimeout(function() {
+            $(".alert").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove();
+            });
+        }, 3000);
+    });
+
+    $(pjaxContainer).on('pjax:error', function(xhr, textStatus) {
+        bootbox.alert({
+            size: 'large',
+            title: "There are some error on ajax request!",
+            message: textStatus.responseText,
+            className: 'bootbox-error'
+        });
+    });
+})();
+JS;
+
+$this->registerJs($js, $this::POS_READY);
 
 ?>
 
@@ -37,7 +65,11 @@ $this->title = "Translations of essence names";
                 <h3>Essences names form</h3>
                 <h4>Here are edited names of essences that admin see in the admin panel</h4>
             </div>
-            <?php $pjax = Pjax::begin() ?>
+            <?php $pjax = Pjax::begin([
+                'options' => [
+                    'id' => 'edit-essences-names-container',
+                ]
+            ]) ?>
             <?php $form = ActiveForm::begin([
                 'id' => 'edit-essences-names-form',
                 'options' => [
@@ -46,8 +78,15 @@ $this->title = "Translations of essence names";
             ]);
             ?>
 
+            <?php if (isset($success) && $success): ?>
+                <div class="alert alert-success alert-dismissible fade in" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <strong>Success!</strong> Essence data updated.
+                </div>
+            <?php endif; ?>
+
             <?= SimpleTabsTranslatesWidget::widget([
-                'form' => $form,
+                'form'            => $form,
                 'translateModels' => $translateModels,
             ])
             ?>

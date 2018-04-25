@@ -152,6 +152,12 @@ class DeveloperController extends Controller
             foreach($translateModels as $key=>$translateModel) {
                 $translateModel->save();
             }
+
+            return $this->render('/developer/essence_translates', [
+                'essence'         => $essence,
+                'translateModels' => $translateModels,
+                'success'         => true,
+            ]);
         }
 
         return $this->render('/developer/essence_translates', [

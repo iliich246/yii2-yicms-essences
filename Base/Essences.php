@@ -258,7 +258,7 @@ class Essences extends ActiveRecord implements SortOrderInterface
      */
     public function configToChangeOfOrder()
     {
-        //$this->scenario = self::SCENARIO_UPDATE;
+        $this->scenario = self::SCENARIO_UPDATE;
     }
 
     /**
