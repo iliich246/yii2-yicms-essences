@@ -10,7 +10,7 @@ use yii\helpers\Url;
 
 <?php Pjax::begin([
     'options' => [
-        'id' => 'update-pages-list-container'
+        'id' => 'update-essences-list-container'
     ],
     'linkSelector' => false,
 ]) ?>
@@ -18,7 +18,7 @@ use yii\helpers\Url;
     <?php foreach($essences as $essence): ?>
         <div class="row list-items">
             <div class="col-xs-10 list-title">
-                <a href="<?= Url::toRoute(['update', 'id' => $essence->id]) ?>">
+                <a href="<?= Url::toRoute(['update-essence', 'id' => $essence->id]) ?>">
                     <p>
                         <?= $essence->program_name ?>
                     </p>

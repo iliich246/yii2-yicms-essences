@@ -10,8 +10,8 @@ use yii\helpers\Url;
 <div class="row link-block">
     <div class="col-xs-12">
         <h2>Essences module</h2>
-        <a <?php if ($widget->route == 'pages/dev/list'): ?> class="active" <?php endif; ?>
-            href="<?= Url::toRoute('/pages/dev/list') ?>">
+        <a <?php if ($widget->route == 'essences/dev/list'): ?> class="active" <?php endif; ?>
+            href="<?= Url::toRoute('/essences/dev/list') ?>">
             List of essences
         </a>
         <a <?php if (
