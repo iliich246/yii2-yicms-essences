@@ -15,6 +15,21 @@ use Iliich246\YicmsCommon\Languages\Language;
 use Iliich246\YicmsCommon\Base\CommonHashForm;
 use Iliich246\YicmsEssences\Base\Essences;
 use Iliich246\YicmsEssences\Base\EssencesException;
+use Iliich246\YicmsCommon\Fields\FieldTemplate;
+use Iliich246\YicmsCommon\Fields\DevFieldsGroup;
+use Iliich246\YicmsCommon\Fields\FieldsDevModalWidget;
+use Iliich246\YicmsCommon\Files\FilesBlock;
+use Iliich246\YicmsCommon\Files\DevFilesGroup;
+use Iliich246\YicmsCommon\Files\FilesDevModalWidget;
+use Iliich246\YicmsCommon\Images\ImagesBlock;
+use Iliich246\YicmsCommon\Images\DevImagesGroup;
+use Iliich246\YicmsCommon\Images\ImagesDevModalWidget;
+use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
+use Iliich246\YicmsCommon\Conditions\DevConditionsGroup;
+use Iliich246\YicmsCommon\Conditions\ConditionsDevModalWidget;
+use Iliich246\YicmsPages\Base\Pages;
+use Iliich246\YicmsPages\Base\PagesException;
+use Iliich246\YicmsPages\Base\PageDevTranslatesForm;
 
 /**
  * Class DeveloperController
@@ -246,6 +261,246 @@ class DeveloperController extends Controller
 
         return $this->render('/pjax/update-essences-list-container', [
             'essences' => $essences
+        ]);
+    }
+
+    /**
+     * Renders category templates page
+     * @param $id
+     * @return string
+     * @throws NotFoundHttpException
+     * @throws \Exception
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function actionEssenceCategoryTemplates($id)
+    {
+        /** @var Essences $essence */
+        $essence = Essences::findOne($id);
+
+        if (!$essence) throw new NotFoundHttpException('Wrong essenceId = ' . $id);
+
+        //initialize fields group
+        $devFieldGroup = new DevFieldsGroup();
+        $devFieldGroup->setFieldTemplateReference($essence->getCategoryFieldTemplateReference());
+        $devFieldGroup->initialize(Yii::$app->request->post('_fieldTemplateId'));
+
+        //try to load validate and save field via pjax
+        if ($devFieldGroup->load(Yii::$app->request->post()) && $devFieldGroup->validate()) {
+
+            if (!$devFieldGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return FieldsDevModalWidget::widget([
+                'devFieldGroup' => $devFieldGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $devFilesGroup = new DevFilesGroup();
+        $devFilesGroup->setFilesTemplateReference($essence->getCategoryFileTemplateReference());
+        $devFilesGroup->initialize(Yii::$app->request->post('_fileTemplateId'));
+
+        //try to load validate and save field via pjax
+        if ($devFilesGroup->load(Yii::$app->request->post()) && $devFilesGroup->validate()) {
+
+            if (!$devFilesGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return FilesDevModalWidget::widget([
+                'devFilesGroup' => $devFilesGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $devImagesGroup = new DevImagesGroup();
+        $devImagesGroup->setImagesTemplateReference($essence->getCategoryImageTemplateReference());
+        $devImagesGroup->initialize(Yii::$app->request->post('_imageTemplateId'));
+
+        //try to load validate and save image block via pjax
+        if ($devImagesGroup->load(Yii::$app->request->post()) && $devImagesGroup->validate()) {
+
+            if (!$devImagesGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return ImagesDevModalWidget::widget([
+                'devImagesGroup' => $devImagesGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $devConditionsGroup = new DevConditionsGroup();
+        $devConditionsGroup->setConditionsTemplateReference($essence->getCategoryConditionTemplateReference());
+        $devConditionsGroup->initialize(Yii::$app->request->post('_conditionTemplateId'));
+
+        //try to load validate and save image block via pjax
+        if ($devConditionsGroup->load(Yii::$app->request->post()) && $devConditionsGroup->validate()) {
+
+            if (!$devConditionsGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return ConditionsDevModalWidget::widget([
+                'devConditionsGroup' => $devConditionsGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $fieldTemplatesTranslatable = FieldTemplate::getListQuery($essence->getCategoryFieldTemplateReference())
+            ->andWhere(['language_type' => FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE])
+            ->orderBy([FieldTemplate::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $fieldTemplatesSingle = FieldTemplate::getListQuery($essence->getCategoryFieldTemplateReference())
+            ->andWhere(['language_type' => FieldTemplate::LANGUAGE_TYPE_SINGLE])
+            ->orderBy([FieldTemplate::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $filesBlocks = FilesBlock::getListQuery($essence->getCategoryFileTemplateReference())
+            ->orderBy([FilesBlock::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $imagesBlocks = ImagesBlock::getListQuery($essence->getCategoryImageTemplateReference())
+            ->orderBy([ImagesBlock::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $conditionTemplates = ConditionTemplate::getListQuery($essence->getCategoryConditionTemplateReference())
+            ->orderBy([ConditionTemplate::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        return $this->render('/developer/category_templates', [
+            'essence'                    => $essence,
+            'devFieldGroup'              => $devFieldGroup,
+            'fieldTemplatesTranslatable' => $fieldTemplatesTranslatable,
+            'fieldTemplatesSingle'       => $fieldTemplatesSingle,
+            'devFilesGroup'              => $devFilesGroup,
+            'filesBlocks'                => $filesBlocks,
+            'devImagesGroup'             => $devImagesGroup,
+            'imagesBlocks'               => $imagesBlocks,
+            'devConditionsGroup'         => $devConditionsGroup,
+            'conditionTemplates'         => $conditionTemplates
+        ]);
+    }
+
+    /**
+     * Render represents template page
+     * @param $id
+     * @return string
+     * @throws NotFoundHttpException
+     * @throws \Exception
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function actionEssenceRepresentTemplates($id)
+    {
+        /** @var Essences $essence */
+        $essence = Essences::findOne($id);
+
+        if (!$essence) throw new NotFoundHttpException('Wrong essenceId = ' . $id);
+
+        //initialize fields group
+        $devFieldGroup = new DevFieldsGroup();
+        $devFieldGroup->setFieldTemplateReference($essence->getRepresentFieldTemplateReference());
+        $devFieldGroup->initialize(Yii::$app->request->post('_fieldTemplateId'));
+
+        //try to load validate and save field via pjax
+        if ($devFieldGroup->load(Yii::$app->request->post()) && $devFieldGroup->validate()) {
+
+            if (!$devFieldGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return FieldsDevModalWidget::widget([
+                'devFieldGroup' => $devFieldGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $devFilesGroup = new DevFilesGroup();
+        $devFilesGroup->setFilesTemplateReference($essence->getRepresentFileTemplateReference());
+        $devFilesGroup->initialize(Yii::$app->request->post('_fileTemplateId'));
+
+        //try to load validate and save field via pjax
+        if ($devFilesGroup->load(Yii::$app->request->post()) && $devFilesGroup->validate()) {
+
+            if (!$devFilesGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return FilesDevModalWidget::widget([
+                'devFilesGroup' => $devFilesGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $devImagesGroup = new DevImagesGroup();
+        $devImagesGroup->setImagesTemplateReference($essence->getRepresentImageTemplateReference());
+        $devImagesGroup->initialize(Yii::$app->request->post('_imageTemplateId'));
+
+        //try to load validate and save image block via pjax
+        if ($devImagesGroup->load(Yii::$app->request->post()) && $devImagesGroup->validate()) {
+
+            if (!$devImagesGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return ImagesDevModalWidget::widget([
+                'devImagesGroup' => $devImagesGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $devConditionsGroup = new DevConditionsGroup();
+        $devConditionsGroup->setConditionsTemplateReference($essence->getRepresentConditionTemplateReference());
+        $devConditionsGroup->initialize(Yii::$app->request->post('_conditionTemplateId'));
+
+        //try to load validate and save image block via pjax
+        if ($devConditionsGroup->load(Yii::$app->request->post()) && $devConditionsGroup->validate()) {
+
+            if (!$devConditionsGroup->save()) {
+                //TODO: bootbox error
+            }
+
+            return ConditionsDevModalWidget::widget([
+                'devConditionsGroup' => $devConditionsGroup,
+                'dataSaved' => true,
+            ]);
+        }
+
+        $fieldTemplatesTranslatable = FieldTemplate::getListQuery($essence->getRepresentFieldTemplateReference())
+            ->andWhere(['language_type' => FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE])
+            ->orderBy([FieldTemplate::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $fieldTemplatesSingle = FieldTemplate::getListQuery($essence->getRepresentFieldTemplateReference())
+            ->andWhere(['language_type' => FieldTemplate::LANGUAGE_TYPE_SINGLE])
+            ->orderBy([FieldTemplate::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $filesBlocks = FilesBlock::getListQuery($essence->getRepresentFieldTemplateReference())
+            ->orderBy([FilesBlock::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $imagesBlocks = ImagesBlock::getListQuery($essence->getRepresentImageTemplateReference())
+            ->orderBy([ImagesBlock::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        $conditionTemplates = ConditionTemplate::getListQuery($essence->getRepresentConditionTemplateReference())
+            ->orderBy([ConditionTemplate::getOrderFieldName() => SORT_ASC])
+            ->all();
+
+        return $this->render('/developer/represents_templates', [
+            'essence'                    => $essence,
+            'devFieldGroup'              => $devFieldGroup,
+            'fieldTemplatesTranslatable' => $fieldTemplatesTranslatable,
+            'fieldTemplatesSingle'       => $fieldTemplatesSingle,
+            'devFilesGroup'              => $devFilesGroup,
+            'filesBlocks'                => $filesBlocks,
+            'devImagesGroup'             => $devImagesGroup,
+            'imagesBlocks'               => $imagesBlocks,
+            'devConditionsGroup'         => $devConditionsGroup,
+            'conditionTemplates'         => $conditionTemplates
         ]);
     }
 }

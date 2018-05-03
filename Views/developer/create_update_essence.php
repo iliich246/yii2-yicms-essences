@@ -135,8 +135,20 @@ $this->registerJs($js, $this::POS_READY);
                            class="btn btn-primary">
                             Essence name translates
                         </a>
+
+                        <a href="<?= Url::toRoute(['essence-category-templates', 'id' => $essence->id]) ?>"
+                           class="btn btn-primary">
+                            Essence category templates
+                        </a>
+
+                        <a href="<?= Url::toRoute(['essence-represent-templates', 'id' => $essence->id]) ?>"
+                           class="btn btn-primary">
+                            Essence represent templates
+                        </a>
                     </div>
                 </div>
+
+
             <?php endif; ?>
 
             <?php Pjax::begin([

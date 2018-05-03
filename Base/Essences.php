@@ -222,6 +222,118 @@ class Essences extends ActiveRecord implements SortOrderInterface
     }
 
     /**
+     * Returns field_template_reference_category
+     * @return string
+     */
+    public function getCategoryFieldTemplateReference()
+    {
+        if (!$this->field_template_reference_category) {
+            $this->field_template_reference_category = FieldTemplate::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->field_template_reference_category;
+    }
+
+    /**
+     * Returns file_template_reference_category
+     * @return string
+     */
+    public function getCategoryFileTemplateReference()
+    {
+        if (!$this->file_template_reference_category) {
+            $this->file_template_reference_category = FilesBlock::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->file_template_reference_category;
+    }
+
+    /**
+     * Returns image_template_reference_category
+     * @return string
+     */
+    public function getCategoryImageTemplateReference()
+    {
+        if (!$this->image_template_reference_category) {
+            $this->image_template_reference_category = ImagesBlock::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->image_template_reference_category;
+    }
+
+    /**
+     * Returns condition_template_reference_category
+     * @return string
+     */
+    public function getCategoryConditionTemplateReference()
+    {
+        if (!$this->condition_template_reference_category) {
+            $this->condition_template_reference_category = ConditionTemplate::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->condition_template_reference_category;
+    }
+
+    /**
+     * Returns field_template_reference_represent
+     * @return string
+     */
+    public function getRepresentFieldTemplateReference()
+    {
+        if (!$this->field_template_reference_represent) {
+            $this->field_template_reference_represent = FieldTemplate::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->field_template_reference_represent;
+    }
+
+    /**
+     * Returns file_template_reference_represent
+     * @return string
+     */
+    public function getRepresentFileTemplateReference()
+    {
+        if (!$this->file_template_reference_represent) {
+            $this->file_template_reference_represent = FilesBlock::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->file_template_reference_represent;
+    }
+
+    /**
+     * Returns image_template_reference_represent
+     * @return string
+     */
+    public function getRepresentImageTemplateReference()
+    {
+        if (!$this->image_template_reference_represent) {
+            $this->image_template_reference_represent = ImagesBlock::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->image_template_reference_represent;
+    }
+
+    /**
+     * Returns condition_template_reference_represent
+     * @return string
+     */
+    public function getRepresentConditionTemplateReference()
+    {
+        if (!$this->condition_template_reference_represent) {
+            $this->condition_template_reference_represent = ConditionTemplate::generateTemplateReference();
+            $this->save(false);
+        }
+
+        return $this->condition_template_reference_represent;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getOrderQuery()
