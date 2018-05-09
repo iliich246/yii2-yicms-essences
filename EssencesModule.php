@@ -19,6 +19,16 @@ class EssencesModule extends AbstractConfigurableModule implements YicmsModuleIn
     ];
 
     /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        //TODO: makes correct build of controller map via common->$yicmsLocation
+        $this->controllerMap['admin'] = 'app\yicms\Essences\Controllers\AdminController';
+        parent::init();
+    }
+
+    /**
      * @inherited
      */
     public function getNameSpace()
