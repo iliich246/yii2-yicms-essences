@@ -29,6 +29,20 @@ class EssencesModule extends AbstractConfigurableModule implements YicmsModuleIn
     }
 
     /**
+     * Proxy translate method from module to framework
+     * @param $category
+     * @param $message
+     * @param array $params
+     * @param null $language
+     * @return mixed
+     */
+    public static function t($category, $message, $params = [], $language = null)
+    {
+        //Implement this method correctly
+        return $message;
+    }
+
+    /**
      * @inherited
      */
     public function getNameSpace()

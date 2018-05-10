@@ -79,6 +79,8 @@ class EssencesCategories extends ActiveRecord implements
     /** @var ConditionsHandler instance of condition handler object*/
     private $conditionHandler;
 
+    private $tempEssence;
+
     /**
      * @inheritdoc
      */
@@ -132,6 +134,41 @@ class EssencesCategories extends ActiveRecord implements
     }
 
     /**
+     * PHP getter magic method.
+     * This method is overridden so that essence attribute will return $this->tempEssence
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)    {
+
+        if (!$this->getIsNewRecord() && $name != 'essence') return parent::__get($name);
+
+        return $this->tempEssence;
+
+    }
+
+    /**
+     * PHP setter magic method.
+     * This method is overridden so that for not saved object essence attribute will save in
+     * $this->tempEssence, not in AR attributes
+     *
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+        if (!$this->getIsNewRecord() && $name != 'essence') {
+            parent::__set($name, $value);
+            return;
+        }
+
+        $this->tempEssence = $value;
+    }
+
+
+
+    /**
      * @return \yii\db\ActiveQuery
      */
     public function getRepresents()
@@ -166,6 +203,8 @@ class EssencesCategories extends ActiveRecord implements
     {
         $essence = $this->essence;
 
+        //throw new \Exception(print_r($essence,true));
+
         if (!$essence->field_template_reference_category) {
             $essence->field_template_reference_category = FieldTemplate::generateTemplateReference();
             $this->save(false);
@@ -179,6 +218,8 @@ class EssencesCategories extends ActiveRecord implements
      */
     public function getFieldReference()
     {
+        return 'xxx';
+
         if (!$this->field_reference) {
             $this->field_reference = Field::generateReference();
             $this->save(false);

@@ -27,6 +27,8 @@ class m180423_213106_essences_init extends Migration
             'essence_order'                          => $this->integer(),
             'editable'                               => $this->boolean(),
             'visible'                                => $this->boolean(),
+            'category_form_name_field'               => $this->integer(),
+            'represent_form_name_field'              => $this->integer(),
             'field_template_reference_category'      => $this->string(),
             'file_template_reference_category'       => $this->string(),
             'image_template_reference_category'      => $this->string(),

@@ -2,6 +2,8 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
+use Iliich246\YicmsCommon\Languages\LanguagesDb;
+use Iliich246\YicmsEssences\EssencesModule;
 use yii\db\ActiveRecord;
 
 /**
@@ -102,6 +104,63 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
 
         return $tree;
     }
+
+    /**
+     * Returns array representing current tree for dropdown lists
+     * @param LanguagesDb|null $language
+     * @return array
+     */
+    public function getList(LanguagesDb $language = null)
+    {
+        $tree = $this->getTreeArray();
+
+        $result[0] = EssencesModule::t('app', 'Root category');
+
+        if (!$tree) return $result;
+
+        foreach($tree as $id=>$topNode) {
+            $result += $this->traversalForList($topNode, 1, $language);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Recursive method for build array for drop lists
+     * @param array $nodeArray
+     * @param $level
+     * @param LanguagesDb|null $language
+     * @return mixed
+     * @throws CommonException
+     */
+    private function traversalForList(array $nodeArray, $level, LanguagesDb $language = null)
+    {
+        /** @var AbstractTreeNode $node */
+        $node = $nodeArray['node'];
+
+        $levelString = '';
+        for ($i = 1; $i < $level; $i++)
+            $levelString .= '-';
+
+        //$node->setAdminMode();
+
+        //$result[$node->id] = $levelString . $node->getTranslate($language) . ' id = ' . $node->id . ' Level = ' . $node->getLevel();
+
+        $result[$node->id] = 'TEMP NAME';
+
+        if (!isset($nodeArray['children'])) return $result;
+
+        $level++;
+
+        //if ($this->getMaxLevelBuffered() !== false && $this->getMaxLevelBuffered() < $level) return $result;
+
+        foreach($nodeArray['children'] as $childrenArray)
+            $result += $this->traversalForList($childrenArray, $level, $language);
+
+        return $result;
+    }
+
+
 
     /**
      * Returns array of nodes for this tree collection (fetch from db)

@@ -22,6 +22,8 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
  * @property int $essence_order
  * @property bool $editable
  * @property bool $visible
+ * @property int $category_form_name_field
+ * @property int $represent_form_name_field
  * @property string $field_template_reference_category
  * @property string $file_template_reference_category
  * @property string $image_template_reference_category
@@ -387,7 +389,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     protected function getTreeNodes()
     {
         return EssencesCategories::find()->where([
-
-        ]);
+            'essence_id' => $this->id,
+            'mode'       => EssencesCategories::MODE_CASUAL
+        ])->all();
     }
 }
