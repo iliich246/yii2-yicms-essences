@@ -66,6 +66,10 @@ class EssencesCategories extends ActiveRecord implements
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
 
+    const MODE_CASUAL = 0;
+    const MODE_BASKET = 1;
+    const MODE_TOP    = 2;
+
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
     /** @var FilesHandler instance of file handler object*/

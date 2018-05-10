@@ -36,7 +36,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
  *
  * @author iliich246 <iliich246@gmail.com>
  */
-class Essences extends ActiveRecord implements SortOrderInterface
+class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 {
     use SortOrderTrait;
 
@@ -379,5 +379,15 @@ class Essences extends ActiveRecord implements SortOrderInterface
     public function getOrderAble()
     {
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getTreeNodes()
+    {
+        return EssencesCategories::find()->where([
+
+        ]);
     }
 }
