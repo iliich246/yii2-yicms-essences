@@ -24,7 +24,6 @@ $js = <<<JS
         }, 3000);
     });
 
-
     $(pjaxContainer).on('pjax:error', function(xhr, textStatus) {
         bootbox.alert({
             size: 'large',
@@ -147,8 +146,6 @@ $this->registerJs($js, $this::POS_READY);
                         </a>
                     </div>
                 </div>
-
-
             <?php endif; ?>
 
             <?php Pjax::begin([
@@ -204,6 +201,26 @@ $this->registerJs($js, $this::POS_READY);
             <div class="row">
                 <div class="col-xs-12">
                     <?= $form->field($essence, 'visible')->checkbox() ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <?= $form->field($essence, 'category_form_name_field')->dropDownList(
+                        $essence->getCategoriesFieldsList(),
+                        [
+                            //'prompt' => '123'
+                    ]) ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <?= $form->field($essence, 'represent_form_name_field')->dropDownList(
+                        $essence->getRepresentsFieldsList(),
+                    [
+                        //'prompt' => ''
+                    ]) ?>
                 </div>
             </div>
 

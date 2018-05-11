@@ -2,6 +2,7 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
+use Iliich246\YicmsCommon\Fields\Field;
 use Yii;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -78,6 +79,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             ['program_name', 'validateProgramName'],
             [['is_categories', 'count_subcategories', 'is_multiple_categories', 'essence_order'], 'integer'],
             [['editable', 'visible'], 'boolean'],
+            ['category_form_name_field', 'integer'],
+            ['represent_form_name_field', 'integer'],
         ];
     }
 
@@ -88,10 +91,12 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         return [
             self::SCENARIO_CREATE => [
-                'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories'
+                'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
+                'category_form_name_field', 'represent_form_name_field'
             ],
             self::SCENARIO_UPDATE => [
-                'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories'
+                'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
+                'category_form_name_field', 'represent_form_name_field'
             ],
         ];
     }
@@ -102,10 +107,12 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     public function attributeLabels()
     {
         return [
-            'program_name' => 'Program Name',
-            'is_categories' => 'Is Categories',
-            'count_subcategories' => 'Count Subcategories  (0 - infinity)',
-            'is_multiple_categories' => 'Is Multiple Categories',
+            'program_name'              => 'Program Name',
+            'is_categories'             => 'Is Categories',
+            'count_subcategories'       => 'Count Subcategories  (0 - infinity)',
+            'is_multiple_categories'    => 'Is Multiple Categories',
+            'category_form_name_field'  => 'Name forming field for categories',
+            'represent_form_name_field' => 'Name forming field for represents',
         ];
     }
 
@@ -160,6 +167,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
      */
     public function afterValidate()
     {
+        parent::afterValidate();
+
         if ($this->hasErrors()) return;
 
         if ($this->scenario == self::SCENARIO_CREATE) {
@@ -205,6 +214,16 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         //TODO: make this method
         return true;
+    }
+
+    public function getCategoriesFieldsList()
+    {
+        //return [0 => 'one', 1 => 'two', 2 => 'three'];
+    }
+
+    public function getRepresentsFieldsList()
+    {
+        return ['one', 'two', 'three'];
     }
 
     /**

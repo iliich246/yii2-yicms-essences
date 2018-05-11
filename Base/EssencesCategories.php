@@ -78,7 +78,8 @@ class EssencesCategories extends ActiveRecord implements
     private $imageHandler;
     /** @var ConditionsHandler instance of condition handler object*/
     private $conditionHandler;
-
+    /** @var Essences instance used for return in create mode where category is not
+     * physically saved in db*/
     private $tempEssence;
 
     /**

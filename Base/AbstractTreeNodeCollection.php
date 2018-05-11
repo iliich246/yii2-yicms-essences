@@ -4,6 +4,7 @@ namespace Iliich246\YicmsEssences\Base;
 
 use Iliich246\YicmsCommon\Languages\LanguagesDb;
 use Iliich246\YicmsEssences\EssencesModule;
+use yii\base\Event;
 use yii\db\ActiveRecord;
 
 /**
@@ -16,6 +17,8 @@ use yii\db\ActiveRecord;
  */
 abstract class AbstractTreeNodeCollection extends ActiveRecord
 {
+    const EVENT_LIST_DATA_INSERT = 'listDataInsert';
+
     /** @var array with tree nodes represented in tree view
      * It`s represented as:
      * [1] => array -> this index is node id in database
@@ -146,7 +149,14 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
 
         //$result[$node->id] = $levelString . $node->getTranslate($language) . ' id = ' . $node->id . ' Level = ' . $node->getLevel();
 
+
+
         $result[$node->id] = 'TEMP NAME';
+
+        //$event = new TreeEvent();
+        //$event->data = $result[$node->id];
+
+        //$this->trigger(self::EVENT_LIST_DATA_INSERT, $event);
 
         if (!isset($nodeArray['children'])) return $result;
 
