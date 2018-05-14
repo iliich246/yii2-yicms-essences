@@ -216,14 +216,44 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         return true;
     }
 
+    /**
+     * Method return list of category fields for drop down lists
+     * This method do not buffer templates
+     * @return array
+     */
     public function getCategoriesFieldsList()
     {
-        //return [0 => 'one', 1 => 'two', 2 => 'three'];
+        /** @var FieldTemplate[] $fieldTemplates */
+        $fieldTemplates = FieldTemplate::find()->where([
+            'field_template_reference' => $this->getCategoryFieldTemplateReference(),
+        ])->all();
+
+        $result = [0 => 'No field selected'];
+
+        foreach($fieldTemplates as $fieldTemplate)
+            $result[$fieldTemplate->id] = $fieldTemplate->program_name;
+
+        return $result;
     }
 
+    /**
+     * Method return list of represents fields for drop down lists
+     * This method do not buffer templates
+     * @return array
+     */
     public function getRepresentsFieldsList()
     {
-        return ['one', 'two', 'three'];
+        /** @var FieldTemplate[] $fieldTemplates */
+        $fieldTemplates = FieldTemplate::find()->where([
+            'field_template_reference' => $this->getRepresentFieldTemplateReference(),
+        ])->all();
+
+        $result = [0 => 'No field selected'];
+
+        foreach($fieldTemplates as $fieldTemplate)
+            $result[$fieldTemplate->id] = $fieldTemplate->program_name;
+
+        return $result;
     }
 
     /**
@@ -409,7 +439,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         return EssencesCategories::find()->where([
             'essence_id' => $this->id,
-            'mode'       => EssencesCategories::MODE_CASUAL
+            //'mode'       => EssencesCategories::MODE_CASUAL
         ])->all();
     }
 }

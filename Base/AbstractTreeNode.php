@@ -4,6 +4,7 @@ namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
 use yii\db\ActiveRecord;
+use Iliich246\YicmsCommon\Languages\LanguagesDb;
 
 /**
  * Class AbstractTreeNode
@@ -11,7 +12,8 @@ use yii\db\ActiveRecord;
  * This class keep methods for work with database tree node.
  *
  * @property integer $id
- * @property integer $parent
+ * @property integer $parent_id
+ * @property integer $level
  *
  * @author iliich246 <iliich246@gmail.com>
  */
@@ -27,7 +29,7 @@ abstract class AbstractTreeNode extends ActiveRecord
      * @return bool|int
      * @throws EssencesException
      */
-    public function level()
+    public function getLevel()
     {
         if (!is_null($this->level)) return $this->level;
 
@@ -50,6 +52,15 @@ abstract class AbstractTreeNode extends ActiveRecord
         }
 
         throw new EssencesException('Can`t reach this place, needed for delete IDE error highlight');
+    }
+
+    /**
+     * Level setter
+     * @param $level
+     */
+    public function setLevel($level)
+    {
+        $this->level = $level;
     }
 
     /**
@@ -82,5 +93,10 @@ abstract class AbstractTreeNode extends ActiveRecord
         $this->collection = $collection;
     }
 
-
+    /**
+     * Returns name of node for various list
+     * @param LanguagesDb|null $language
+     * @return mixed
+     */
+    abstract public function getNodeName(LanguagesDb $language = null);
 }

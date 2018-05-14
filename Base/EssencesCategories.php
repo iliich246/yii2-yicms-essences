@@ -3,9 +3,9 @@
 namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
-use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
+use Iliich246\YicmsCommon\Languages\LanguagesDb;
 use Iliich246\YicmsCommon\Fields\Field;
 use Iliich246\YicmsCommon\Fields\FieldsHandler;
 use Iliich246\YicmsCommon\Fields\FieldTemplate;
@@ -50,7 +50,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionsReferenceInterface;
  *
  * @author iliich246 <iliich246@gmail.com>
  */
-class EssencesCategories extends ActiveRecord implements
+class EssencesCategories extends AbstractTreeNode implements
     FieldsInterface,
     FieldReferenceInterface,
     FilesInterface,
@@ -105,6 +105,22 @@ class EssencesCategories extends ActiveRecord implements
     /**
      * @inheritdoc
      */
+    public function scenarios()
+    {
+        return [
+            self::SCENARIO_CREATE => [
+                'essence_id', 'parent_id', 'editable', 'visible', 'mode',
+            ],
+            self::SCENARIO_UPDATE => [
+                'essence_id', 'parent_id', 'editable', 'visible', 'mode',
+            ],
+            self::SCENARIO_DEFAULT => [],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         return [
@@ -127,11 +143,21 @@ class EssencesCategories extends ActiveRecord implements
     }
 
     /**
+     * Essence getter
      * @return \yii\db\ActiveQuery
      */
     public function getEssence()
     {
         return $this->hasOne(Essences::className(), ['id' => 'essence_id']);
+    }
+
+    /**
+     * Essence setter
+     * @param $essence
+     */
+    public function setEssence($essence)
+    {
+        $this->essence = $essence;
     }
 
     /**
@@ -143,10 +169,10 @@ class EssencesCategories extends ActiveRecord implements
      */
     public function __get($name)    {
 
-        if (!$this->getIsNewRecord() && $name != 'essence') return parent::__get($name);
+//        if ($this->getIsNewRecord() && $name == 'essence')
+//            return $this->tempEssence;
 
-        return $this->tempEssence;
-
+        return parent::__get($name);
     }
 
     /**
@@ -159,15 +185,64 @@ class EssencesCategories extends ActiveRecord implements
      */
     public function __set($name, $value)
     {
-        if (!$this->getIsNewRecord() && $name != 'essence') {
-            parent::__set($name, $value);
-            return;
+//        if ($this->getIsNewRecord() && $name == 'essence') {
+//            $this->tempEssence = $value;
+//            return;
+//        }
+
+        parent::__set($name, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function save($runValidation = true, $attributeNames = null)
+    {
+        if ($this->scenario == self::SCENARIO_CREATE) {
+            $this->essence_id     = $this->essence->id;
+            $this->mode           = self::MODE_CASUAL;
+            $this->category_order = $this->maxOrder();
         }
 
-        $this->tempEssence = $value;
+        return parent::save();
+    }
+
+    /**
+     * Returns name of category via name forming field
+     * @return string
+     */
+    public function name()
+    {
+        $nameFormFieldId = $this->essence->category_form_name_field;
+
+        if (!$nameFormFieldId) {
+            return $this->id;
+        }
+
+        /** @var FieldTemplate $fieldTemplate */
+        $fieldTemplate = FieldTemplate::findOne($nameFormFieldId);
+
+        if (!$fieldTemplate) {
+            //TODO: error message
+            return $this->id;
+        }
+
+        $ss = $this->getField('test1');
+
+        throw new \yii\base\Exception(print_r( $ss , true));
+
+        //return $this->getField($fieldTemplate->program_name);
     }
 
 
+
+    /**
+     * @inheritdoc
+     */
+    public function getNodeName(LanguagesDb $language = null)
+    {
+        return static::name();
+    }
 
     /**
      * @return \yii\db\ActiveQuery
@@ -204,12 +279,14 @@ class EssencesCategories extends ActiveRecord implements
     {
         $essence = $this->essence;
 
-        //throw new \Exception(print_r($essence,true));
+        //throw new \Exception(print_r($essence));
 
         if (!$essence->field_template_reference_category) {
             $essence->field_template_reference_category = FieldTemplate::generateTemplateReference();
-            $this->save(false);
+            $essence->save(false);
         }
+
+        //throw new \yii\base\Exception(print_r($essence, true));
 
         return $essence->field_template_reference_category;
     }
@@ -219,8 +296,6 @@ class EssencesCategories extends ActiveRecord implements
      */
     public function getFieldReference()
     {
-        return 'xxx';
-
         if (!$this->field_reference) {
             $this->field_reference = Field::generateReference();
             $this->save(false);

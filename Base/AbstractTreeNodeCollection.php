@@ -72,7 +72,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         $parentNodes = [];
 
         foreach ($nodes as $node) {
-            $parentNodes[$node->parent][$node->id] = $node;
+            $parentNodes[$node->parent_id][$node->id] = $node;
             $node->setCollection($this);
         }
 
@@ -145,18 +145,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         for ($i = 1; $i < $level; $i++)
             $levelString .= '-';
 
-        //$node->setAdminMode();
-
-        //$result[$node->id] = $levelString . $node->getTranslate($language) . ' id = ' . $node->id . ' Level = ' . $node->getLevel();
-
-
-
-        $result[$node->id] = 'TEMP NAME';
-
-        //$event = new TreeEvent();
-        //$event->data = $result[$node->id];
-
-        //$this->trigger(self::EVENT_LIST_DATA_INSERT, $event);
+        $result[$node->id] = $node->getNodeName($language);
 
         if (!isset($nodeArray['children'])) return $result;
 
@@ -170,6 +159,48 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         return $result;
     }
 
+    /**
+     * Return list of nodes by tree order
+     * @return array|bool
+     */
+    public function traversalByTreeOrder()
+    {
+        $tree = $this->getTreeArray();
+
+        if (!$tree) return [];
+
+        $result = [];
+        foreach($tree as $id=>$topNode) {
+            $result += $this->recursiveTraversalByTreeOrder($topNode, 1);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Recursive method for traversal by tree order
+     * @param array $nodeArray
+     * @param $level
+     * @return mixed
+     */
+    private function recursiveTraversalByTreeOrder(array $nodeArray, $level)
+    {
+        /** @var AbstractTreeNode $node */
+        $node = $nodeArray['node'];
+
+        $result[$node->id] = $node;
+
+        if (!isset($nodeArray['children'])) return $result;
+
+        $level++;
+
+        //if ($this->getMaxLevelBuffered() !== false && $this->getMaxLevelBuffered() < $level) return $result;
+
+        foreach($nodeArray['children'] as $id => $childrenArray)
+            $result += $this->recursiveTraversalByTreeOrder($childrenArray, $level);
+
+        return $result;
+    }
 
 
     /**
