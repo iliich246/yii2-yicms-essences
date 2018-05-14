@@ -2,10 +2,9 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
+use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Languages\LanguagesDb;
 use Iliich246\YicmsEssences\EssencesModule;
-use yii\base\Event;
-use yii\db\ActiveRecord;
 
 /**
  * Class AbstractTreeNodeCollection
@@ -28,20 +27,20 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      *          (
      *              [7] => array
      *                  (
-     *                      [node] => AbstractDbTreeNode
+     *                      [node] => AbstractTreeNode
      *                  )
      *              [8] => array
      *                  (
-     *                      [node] => AbstractDbTreeNode
+     *                      [node] => AbstractTreeNode
      *                      [children] => array
      *                          (
      *                             [12] => Array
      *                                  (
-     *                                      [node] => AbstractDbTreeNode
+     *                                      [node] => AbstractTreeNode
      *                                  )
      *                              [13] => Array
      *                                  (
-     *                                      [node] => AbstractDbTreeNode
+     *                                      [node] => AbstractTreeNode
      *                                      [children] => array
      *                                          (
      *                                              ...
@@ -134,7 +133,6 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      * @param $level
      * @param LanguagesDb|null $language
      * @return mixed
-     * @throws CommonException
      */
     private function traversalForList(array $nodeArray, $level, LanguagesDb $language = null)
     {
@@ -161,7 +159,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
 
     /**
      * Return list of nodes by tree order
-     * @return array|bool
+     * @return AbstractTreeNode[]
      */
     public function traversalByTreeOrder()
     {

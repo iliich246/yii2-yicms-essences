@@ -227,14 +227,8 @@ class EssencesCategories extends AbstractTreeNode implements
             return $this->id;
         }
 
-        $ss = $this->getField('test1');
-
-        throw new \yii\base\Exception(print_r( $ss , true));
-
-        //return $this->getField($fieldTemplate->program_name);
+        return $this->getField($fieldTemplate->program_name);
     }
-
-
 
     /**
      * @inheritdoc
