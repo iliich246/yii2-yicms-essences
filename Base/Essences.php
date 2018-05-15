@@ -2,7 +2,6 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
-use Iliich246\YicmsCommon\Fields\Field;
 use Yii;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -45,6 +44,19 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
+
+    /** @var EssencesCategories instance of top category  */
+    private $topCategory;
+    /** @var EssencesCategories instance of basket category  */
+    private $basketCategory;
+    /** @var bool if true standard fields template for categories will be created on essence create */
+    public $createCategoriesStandardFields = false;
+    /** @var bool if true standard fields template for represents will be created on essence create */
+    public $createRepresentsStandardFields = false;
+    /** @var bool if true seo fields template for categories will be created on essence create */
+    public $createCategoriesSeoFields      = false;
+    /** @var bool if true seo fields template for represents will be created on essence create */
+    public $createRepresentSeoFields       = false;
 
     /**
      * @inheritdoc
@@ -191,8 +203,12 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
      */
     public function save($runValidation = true, $attributeNames = null)
     {
-        if ($this->scenario == self::SCENARIO_CREATE)
+        if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_order = $this->maxOrder();
+
+            //$this->createTopCategory();
+            //$this->createBasketCategory();
+        }
 
         return parent::save(false);
     }
@@ -385,6 +401,136 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
+     * Creates top category for this essence
+     * @return bool
+     * @throws EssencesException
+     */
+    public function createTopCategory()
+    {
+        if (!$this->id) {
+            Yii::error('Wrong order of creating. Before create top category you must
+            save this essence in db', __METHOD__);
+            throw new EssencesException('Wrong order of creating. Before create top category you must
+            save this essence in db');
+        }
+
+        if (!is_null($this->topCategory)) return $this->topCategory;
+
+        $topCategory = EssencesCategories::find()
+            ->where([
+                'essence_id' => $this->id,
+                'mode'       => EssencesCategories::MODE_TOP,
+            ])
+            ->one();
+
+        if ($topCategory) {
+            $this->topCategory = $topCategory;
+            return $topCategory;
+        }
+
+        $topCategory             = new EssencesCategories();
+        $topCategory->essence_id = $this->id;
+        $topCategory->mode       = EssencesCategories::MODE_TOP;
+
+        if (!$topCategory->save()) {
+            Yii::error('Error on saving top category', __METHOD__);
+            throw new EssencesException('Error on saving top category');
+        }
+
+        $this->topCategory = $topCategory;
+
+        return $topCategory;
+    }
+
+    /**
+     * Creates basket category for this essence
+     * @return bool
+     * @throws EssencesException
+     */
+    public function createBasketCategory()
+    {
+        if (!$this->id) {
+            Yii::error('Wrong order of creating. Before create basket you must
+            save this essence in db', __METHOD__);
+            throw new EssencesException('Wrong order of creating. Before create basket you must
+            save this essence in db');
+        }
+
+        if (!is_null($this->basketCategory)) return $this->basketCategory;
+
+        $basketCategory = EssencesCategories::find()
+            ->where([
+                'essence_id' => $this->id,
+                'mode'       => EssencesCategories::MODE_BASKET,
+            ])
+            ->one();
+
+        if ($basketCategory) {
+            $this->basketCategory = $basketCategory;
+            return $basketCategory;
+        }
+
+        $basketCategory             = new EssencesCategories();
+        $basketCategory->essence_id = $this->id;
+        $basketCategory->mode       = EssencesCategories::MODE_BASKET;
+
+        if (!$basketCategory->save()) {
+            Yii::error('Error on saving basket category', __METHOD__);
+            throw new EssencesException('Error on saving basket category');
+        }
+
+        $this->basketCategory = $basketCategory;
+
+        return $basketCategory;
+    }
+
+    /**
+     * Return basket category for this essence
+     * @return EssencesCategories
+     */
+    public function getTopCategory()
+    {
+        if (!is_null($this->topCategory)) return $this->topCategory;
+
+        $topCategory = EssencesCategories::find()
+            ->where([
+                'essence_id' => $this->id,
+                'mode'       => EssencesCategories::MODE_TOP,
+            ])
+            ->one();
+
+        if ($topCategory) {
+            $this->topCategory = $topCategory;
+            return $topCategory;
+        }
+
+        return $this->createTopCategory();
+    }
+
+    /**
+     * Return basket category for this essence
+     * @return EssencesCategories
+     */
+    public function getBasketCategory()
+    {
+        if (!is_null($this->basketCategory)) return $this->basketCategory;
+
+        $basketCategory = EssencesCategories::find()
+            ->where([
+                'essence_id' => $this->id,
+                'mode'       => EssencesCategories::MODE_BASKET,
+            ])
+            ->one();
+
+        if ($basketCategory) {
+            $this->basketCategory = $basketCategory;
+            return $basketCategory;
+        }
+
+        return $this->createBasketCategory();
+    }
+
+    /**
      * @inheritdoc
      */
     public function getOrderQuery()
@@ -439,7 +585,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         return EssencesCategories::find()->where([
             'essence_id' => $this->id,
-            //'mode'       => EssencesCategories::MODE_CASUAL
+            'mode'       => EssencesCategories::MODE_CASUAL
         ])->all();
     }
 }

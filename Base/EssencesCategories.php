@@ -3,6 +3,7 @@
 namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
 use Iliich246\YicmsCommon\Languages\LanguagesDb;
@@ -63,12 +64,14 @@ class EssencesCategories extends AbstractTreeNode implements
 {
     use SortOrderTrait;
 
-    const SCENARIO_CREATE = 0;
-    const SCENARIO_UPDATE = 1;
+    const SCENARIO_CREATE           = 0;
+    const SCENARIO_UPDATE           = 1;
+    const SCENARIO_CREATE_TEMPORARY = 2;
 
-    const MODE_CASUAL = 0;
-    const MODE_BASKET = 1;
-    const MODE_TOP    = 2;
+    const MODE_CASUAL    = 0;
+    const MODE_BASKET    = 1;
+    const MODE_TOP       = 2;
+    const MODE_TEMPORARY = 3;
 
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
@@ -78,9 +81,6 @@ class EssencesCategories extends AbstractTreeNode implements
     private $imageHandler;
     /** @var ConditionsHandler instance of condition handler object*/
     private $conditionHandler;
-    /** @var Essences instance used for return in create mode where category is not
-     * physically saved in db*/
-    private $tempEssence;
 
     /**
      * @inheritdoc
@@ -114,6 +114,7 @@ class EssencesCategories extends AbstractTreeNode implements
             self::SCENARIO_UPDATE => [
                 'essence_id', 'parent_id', 'editable', 'visible', 'mode',
             ],
+            self::SCENARIO_CREATE_TEMPORARY => [],
             self::SCENARIO_DEFAULT => [],
         ];
     }
@@ -161,39 +162,6 @@ class EssencesCategories extends AbstractTreeNode implements
     }
 
     /**
-     * PHP getter magic method.
-     * This method is overridden so that essence attribute will return $this->tempEssence
-     *
-     * @param string $name
-     * @return mixed
-     */
-    public function __get($name)    {
-
-//        if ($this->getIsNewRecord() && $name == 'essence')
-//            return $this->tempEssence;
-
-        return parent::__get($name);
-    }
-
-    /**
-     * PHP setter magic method.
-     * This method is overridden so that for not saved object essence attribute will save in
-     * $this->tempEssence, not in AR attributes
-     *
-     * @param string $name
-     * @param mixed $value
-     */
-    public function __set($name, $value)
-    {
-//        if ($this->getIsNewRecord() && $name == 'essence') {
-//            $this->tempEssence = $value;
-//            return;
-//        }
-
-        parent::__set($name, $value);
-    }
-
-    /**
      * @inheritdoc
      */
     public function save($runValidation = true, $attributeNames = null)
@@ -202,6 +170,11 @@ class EssencesCategories extends AbstractTreeNode implements
             $this->essence_id     = $this->essence->id;
             $this->mode           = self::MODE_CASUAL;
             $this->category_order = $this->maxOrder();
+        }
+
+        if ($this->scenario == self::SCENARIO_CREATE_TEMPORARY) {
+            $this->essence_id     = $this->essence->id;
+            $this->mode           = self::MODE_TEMPORARY;
         }
 
         return parent::save();
@@ -273,14 +246,10 @@ class EssencesCategories extends AbstractTreeNode implements
     {
         $essence = $this->essence;
 
-        //throw new \Exception(print_r($essence));
-
         if (!$essence->field_template_reference_category) {
             $essence->field_template_reference_category = FieldTemplate::generateTemplateReference();
             $essence->save(false);
         }
-
-        //throw new \yii\base\Exception(print_r($essence, true));
 
         return $essence->field_template_reference_category;
     }
@@ -444,7 +413,9 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getOrderQuery()
     {
-        return self::find();
+        return self::find()->where([
+            'mode' => self::MODE_CASUAL,
+        ]);
     }
 
     /**

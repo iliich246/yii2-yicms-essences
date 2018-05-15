@@ -204,25 +204,57 @@ $this->registerJs($js, $this::POS_READY);
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-xs-12">
-                    <?= $form->field($essence, 'category_form_name_field')->dropDownList(
-                        $essence->getCategoriesFieldsList(),
-                        [
-                            //'prompt' => '123'
-                    ]) ?>
-                </div>
-            </div>
+            <?php if ($essence->scenario == Essences::SCENARIO_CREATE): ?>
 
-            <div class="row">
-                <div class="col-xs-12">
-                    <?= $form->field($essence, 'represent_form_name_field')->dropDownList(
-                        $essence->getRepresentsFieldsList(),
-                    [
-                        //'prompt' => ''
-                    ]) ?>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <?= $form->field($essence, 'createCategoriesStandardFields')->checkbox() ?>
+                    </div>
                 </div>
-            </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <?= $form->field($essence, 'createRepresentsStandardFields')->checkbox() ?>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <?= $form->field($essence, 'createCategoriesSeoFields')->checkbox() ?>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <?= $form->field($essence, 'createRepresentSeoFields')->checkbox() ?>
+                    </div>
+                </div>
+
+            <?php endif; ?>
+
+            <?php if ($essence->scenario == Essences::SCENARIO_UPDATE): ?>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <?= $form->field($essence, 'category_form_name_field')->dropDownList(
+                            $essence->getCategoriesFieldsList(),
+                            [
+                                //'prompt' => '123'
+                        ]) ?>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <?= $form->field($essence, 'represent_form_name_field')->dropDownList(
+                            $essence->getRepresentsFieldsList(),
+                        [
+                            //'prompt' => ''
+                        ]) ?>
+                    </div>
+                </div>
+
+            <?php endif; ?>
 
             <?php if ($essence->scenario == Essences::SCENARIO_UPDATE): ?>
                 <div class="row delete-button-row">
