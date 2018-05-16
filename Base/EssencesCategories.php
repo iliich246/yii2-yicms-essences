@@ -173,11 +173,21 @@ class EssencesCategories extends AbstractTreeNode implements
         }
 
         if ($this->scenario == self::SCENARIO_CREATE_TEMPORARY) {
+            //$this->killTempCategories();
             $this->essence_id     = $this->essence->id;
             $this->mode           = self::MODE_TEMPORARY;
         }
 
         return parent::save();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function delete()
+    {
+
+        return parent::delete();
     }
 
     /**
@@ -209,6 +219,22 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getNodeName(LanguagesDb $language = null)
     {
         return static::name();
+    }
+
+    public function killTempCategories()
+    {
+        /** @var self $temps */
+        $temps = self::find()->where([
+            'essence_id' => $this->essence->id,
+            'mode'       => self::MODE_TEMPORARY
+        ])->all();
+
+        foreach ($temps as $temp) {
+
+            //TODO: kill all fields and other
+
+            $temp->delete();
+        }
     }
 
     /**
