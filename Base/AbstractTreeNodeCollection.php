@@ -74,7 +74,9 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
             $parentNodes[$node->parent_id][$node->id] = $node;
             $node->setCollection($this);
         }
-throw new \yii\base\Exception(print_r($parentNodes, true));
+
+        //throw new \yii\base\Exception(print_r($parentNodes, true));
+
         $tree = [];
         foreach($parentNodes[0] as $topNode) {
             $oneTree = $this->buildTree($parentNodes, [$topNode]);

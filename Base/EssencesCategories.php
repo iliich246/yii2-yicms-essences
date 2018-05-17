@@ -64,22 +64,22 @@ class EssencesCategories extends AbstractTreeNode implements
 {
     use SortOrderTrait;
 
-    const SCENARIO_CREATE           = 0;
-    const SCENARIO_UPDATE           = 1;
+    const SCENARIO_CREATE = 0;
+    const SCENARIO_UPDATE = 1;
     const SCENARIO_CREATE_TEMPORARY = 2;
 
-    const MODE_CASUAL    = 0;
-    const MODE_BASKET    = 1;
-    const MODE_TOP       = 2;
+    const MODE_CASUAL = 0;
+    const MODE_BASKET = 1;
+    const MODE_TOP = 2;
     const MODE_TEMPORARY = 3;
 
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
-    /** @var FilesHandler instance of file handler object*/
+    /** @var FilesHandler instance of file handler object */
     private $fileHandler;
-    /** @var ImagesHandler instance of image handler object*/
+    /** @var ImagesHandler instance of image handler object */
     private $imageHandler;
-    /** @var ConditionsHandler instance of condition handler object*/
+    /** @var ConditionsHandler instance of condition handler object */
     private $conditionHandler;
 
     /**
@@ -144,6 +144,49 @@ class EssencesCategories extends AbstractTreeNode implements
     }
 
     /**
+     * Return instance of essence category for create mode
+     * In this mode this method will search
+     * @param Essences $essence
+     * @return EssencesCategories|mixed
+     * @throws \Exception
+     * @throws \Throwable
+     */
+    public static function instanceForCreateMode(Essences $essence)
+    {
+        /** @var self[] $temporaryCategories */
+        $temporaryCategories = self::find()->where([
+            'essence_id' => $essence->id,
+            'mode'       => self::MODE_TEMPORARY
+        ])->all();
+
+        if (count($temporaryCategories) > 1) {
+            /** @var self $tempCategory */
+            $tempCategory = array_shift($temporaryCategories);
+
+            foreach($temporaryCategories as $temp)
+                $temp->delete();
+
+            $tempCategory->essence = $essence;
+
+            return $tempCategory;
+        }
+
+        if ($temporaryCategories) {
+            /** @var self $tempCategory */
+            $tempCategory = array_shift($temporaryCategories);
+            $tempCategory->essence = $essence;
+            return $tempCategory;
+        }
+
+        $tempCategory            = new self;
+        $tempCategory->essence   = $essence;
+        $tempCategory->mode      = self::MODE_TEMPORARY;
+        $tempCategory->parent_id = 0;
+
+        return $tempCategory;
+    }
+
+    /**
      * Essence getter
      * @return \yii\db\ActiveQuery
      */
@@ -166,6 +209,8 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function save($runValidation = true, $attributeNames = null)
     {
+        throw new \yii\base\Exception(print_r($this, true));
+
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_id     = $this->essence->id;
             $this->mode           = self::MODE_CASUAL;
