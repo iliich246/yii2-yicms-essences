@@ -56,7 +56,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionsDevModalWidget;
     </div>
 
     <?= $this->render('@yicms-common/views/pjax/update-fields-list-container', [
-        'fieldTemplateReference'     => $essence->getCategoryFieldTemplateReference(),
+        'fieldTemplateReference'     => $essence->getRepresentFieldTemplateReference(),
         'fieldTemplatesTranslatable' => $fieldTemplatesTranslatable,
         'fieldTemplatesSingle'       => $fieldTemplatesSingle
     ]) ?>
