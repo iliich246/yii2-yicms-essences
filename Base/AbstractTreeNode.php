@@ -99,4 +99,10 @@ abstract class AbstractTreeNode extends ActiveRecord
      * @return mixed
      */
     abstract public function getNodeName(LanguagesDb $language = null);
+
+    /**
+     * Returns name of field uses for tree nodes sort
+     * @return string
+     */
+    abstract public function getSortFieldName();
 }

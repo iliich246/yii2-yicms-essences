@@ -104,11 +104,11 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         return [
             self::SCENARIO_CREATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
-                'category_form_name_field', 'represent_form_name_field'
+                'category_form_name_field', 'represent_form_name_field', 'count_subcategories'
             ],
             self::SCENARIO_UPDATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
-                'category_form_name_field', 'represent_form_name_field'
+                'category_form_name_field', 'represent_form_name_field', 'count_subcategories'
             ],
         ];
     }
@@ -199,18 +199,26 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
-     * @inheritdoc
+     * Creates new essence with all service records
+     * @return bool
+     * @throws EssencesException
      */
-    public function save($runValidation = true, $attributeNames = null)
+    public function create()
     {
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_order = $this->maxOrder();
-
-            //$this->createTopCategory();
-            //$this->createBasketCategory();
         }
 
-        return parent::save(false);
+        if (!$this->save(false))
+            throw new EssencesException('Can not create essence '. $this->program_name);
+
+        if (!$this->createBasketCategory())
+            throw new EssencesException('Can not create basket category for '. $this->program_name);
+
+        if (!$this->createTopCategory())
+            throw new EssencesException('Can not create top category for '. $this->program_name);
+
+        return true;
     }
 
     /**
@@ -425,21 +433,15 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
         if ($topCategory) {
             $this->topCategory = $topCategory;
-            return $topCategory;
+            return true;
         }
 
-        $topCategory             = new EssencesCategories();
-        $topCategory->essence_id = $this->id;
-        $topCategory->mode       = EssencesCategories::MODE_TOP;
-
-        if (!$topCategory->save()) {
+        if (!EssencesCategories::createTopCategory($this)) {
             Yii::error('Error on saving top category', __METHOD__);
             throw new EssencesException('Error on saving top category');
         }
 
-        $this->topCategory = $topCategory;
-
-        return $topCategory;
+        return true;
     }
 
     /**
@@ -467,21 +469,15 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
         if ($basketCategory) {
             $this->basketCategory = $basketCategory;
-            return $basketCategory;
+            return true;
         }
 
-        $basketCategory             = new EssencesCategories();
-        $basketCategory->essence_id = $this->id;
-        $basketCategory->mode       = EssencesCategories::MODE_BASKET;
-
-        if (!$basketCategory->save()) {
+        if (!EssencesCategories::createBasketCategory($this)) {
             Yii::error('Error on saving basket category', __METHOD__);
             throw new EssencesException('Error on saving basket category');
         }
 
-        $this->basketCategory = $basketCategory;
-
-        return $basketCategory;
+        return true;
     }
 
     /**
@@ -492,6 +488,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         if (!is_null($this->topCategory)) return $this->topCategory;
 
+        /** @var EssencesCategories $topCategory */
         $topCategory = EssencesCategories::find()
             ->where([
                 'essence_id' => $this->id,
@@ -515,6 +512,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         if (!is_null($this->basketCategory)) return $this->basketCategory;
 
+        /** @var EssencesCategories $basketCategory */
         $basketCategory = EssencesCategories::find()
             ->where([
                 'essence_id' => $this->id,
@@ -576,6 +574,14 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     public function getOrderAble()
     {
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getMaxCategoriesLevel()
+    {
+        return $this->count_subcategories;
     }
 
     /**

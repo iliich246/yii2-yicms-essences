@@ -18,6 +18,11 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
 {
     const EVENT_LIST_DATA_INSERT = 'listDataInsert';
 
+    //Style of sort
+    const SORT_NO   = 0x00;
+    const SORT_ASC  = 0x01;
+    const SORT_DESC = 0x02;
+
     /** @var array with tree nodes represented in tree view
      * It`s represented as:
      * [1] => array -> this index is node id in database
@@ -52,6 +57,20 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      *    )
      */
     private $treeStructure = null;
+    /** @var int keep style of sorting tree nodes */
+    private $sortStyle = self::SORT_ASC;
+    /** @var array debug form of tree array */
+    private $debug;
+
+    /**
+     * Sets style of nodes sort
+     * (use self::SORT_<type>)
+     * @param $sortStyle
+     */
+    public function setSortStyle($sortStyle)
+    {
+        $this->sortStyle = $sortStyle;
+    }
 
     /**
      * Return array of tree structure
@@ -75,7 +94,24 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
             $node->setCollection($this);
         }
 
-        //throw new \yii\base\Exception(print_r($parentNodes, true));
+        $arr = [];
+        foreach ($parentNodes as $key => $parentNode) {
+
+            uasort($parentNode, function($nodeA, $nodeB) {
+                /** @var $nodeA AbstractTreeNode */
+                /** @var $nodeB AbstractTreeNode */
+                $fieldName = $nodeA->getSortFieldName();
+
+                if ($nodeA->$fieldName == $nodeB->$fieldName)
+                    return 0;
+
+                return ($nodeA->$fieldName < $nodeB->$fieldName) ? -1 : 1;
+            });
+
+            $arr[$key] = $parentNode;
+        }
+
+        $parentNodes = $arr;
 
         $tree = [];
         foreach($parentNodes[0] as $topNode) {
@@ -84,7 +120,56 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         }
 
         $this->treeStructure = $tree;
+
         return $this->treeStructure;
+    }
+
+    /**
+     * Only for debug purposes
+     * @return array
+     */
+    public function treeDebugForm()
+    {
+        $this->debug = $this->treeStructure;
+
+        foreach($this->debug as $key => $nodeArray) {
+
+            $this->debug[$key]['p'] = $this->debug[$key]['node']->parent_id;
+            $this->debug[$key]['o'] = $this->debug[$key]['node']->category_order;
+            $this->debug[$key]['node'] = $this->debug[$key]['node']->id;
+
+
+            if (isset($nodeArray['children'])) {
+                $this->debug[$key]['children'] = $this->treeDebugFormRecursive($nodeArray['children']);
+            } else {
+                $this->debug[$key]['node'] = null;
+            }
+        }
+
+        return $this->debug;
+    }
+
+    /**
+     * Only for debug purposes
+     * @param $array
+     * @return mixed
+     */
+    private function treeDebugFormRecursive($array)
+    {
+        foreach($array as $key => $nodeArray) {
+            //throw new \Exception(print_r($nodeArray,true));
+
+            $array[$key]['p'] = $array[$key]['node']->parent_id;
+            $array[$key]['o'] = $array[$key]['node']->category_order;
+            $array[$key]['node'] = $array[$key]['node']->id;
+
+
+            if (isset($nodeArray['children'])) {
+                $array[$key]['children'] = $this->treeDebugFormRecursive($nodeArray['children']);
+            }
+        }
+
+        return $array;
     }
 
     /**
@@ -121,6 +206,8 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         $result[0] = EssencesModule::t('app', 'Root category');
 
         if (!$tree) return $result;
+        
+        if ($this->getMaxCategoriesLevel() == 1) return $result;
 
         foreach($tree as $id=>$topNode) {
             $result += $this->traversalForList($topNode, 1, $language);
@@ -145,13 +232,13 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         for ($i = 1; $i < $level; $i++)
             $levelString .= '-';
 
-        $result[$node->id] = $node->getNodeName($language);
+        $result[$node->id] = $levelString . $node->getNodeName($language);
 
         if (!isset($nodeArray['children'])) return $result;
 
         $level++;
 
-        //if ($this->getMaxLevelBuffered() !== false && $this->getMaxLevelBuffered() < $level) return $result;
+        if ($this->getMaxCategoriesLevel() != 0 && $this->getMaxCategoriesLevel() < ($level+1)) return $result;
 
         foreach($nodeArray['children'] as $childrenArray)
             $result += $this->traversalForList($childrenArray, $level, $language);
@@ -202,6 +289,11 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         return $result;
     }
 
+    /**
+     * Returns maximum allowed level of tree deepness
+     * @return int
+     */
+    abstract public function getMaxCategoriesLevel();
 
     /**
      * Returns array of nodes for this tree collection (fetch from db)

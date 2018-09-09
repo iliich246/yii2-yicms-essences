@@ -84,7 +84,7 @@ class DeveloperController extends Controller
 
         if ($essence->load(Yii::$app->request->post()) && $essence->validate()) {
 
-            if ($essence->save()) {
+            if ($essence->create()) {
                 return $this->redirect(Url::toRoute(['update-essence', 'id' => $essence->id]));
             } else {
                 //TODO: add bootbox error

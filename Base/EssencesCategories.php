@@ -93,6 +93,19 @@ class EssencesCategories extends AbstractTreeNode implements
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->isNewRecord) {
+            $this->visible  = true;
+            $this->editable = true;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         return [
@@ -183,12 +196,14 @@ class EssencesCategories extends AbstractTreeNode implements
         $tempCategory->mode      = self::MODE_TEMPORARY;
         $tempCategory->parent_id = 0;
 
+        throw new \Exception(print_r($tempCategory,true));
+
         return $tempCategory;
     }
 
     /**
      * Essence getter
-     * @return \yii\db\ActiveQuery
+     * @return Essences
      */
     public function getEssence()
     {
@@ -209,7 +224,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function save($runValidation = true, $attributeNames = null)
     {
-        throw new \yii\base\Exception(print_r($this, true));
+        //throw new \yii\base\Exception(print_r($this, true));
 
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_id     = $this->essence->id;
@@ -217,13 +232,43 @@ class EssencesCategories extends AbstractTreeNode implements
             $this->category_order = $this->maxOrder();
         }
 
-        if ($this->scenario == self::SCENARIO_CREATE_TEMPORARY) {
-            //$this->killTempCategories();
-            $this->essence_id     = $this->essence->id;
-            $this->mode           = self::MODE_TEMPORARY;
+        if ($this->scenario == self::SCENARIO_UPDATE) {
+
+            //throw new \Exception(print_r($this->oldAttributes,true));
+            if ($this->oldAttributes['parent_id'] != $this->parent_id) {
+                $this->category_order = $this->maxOrder();
+            }
         }
 
         return parent::save();
+    }
+
+    /**
+     * Creates top category for essence
+     * @param Essences $essence
+     * @return bool
+     */
+    public static function createTopCategory(Essences $essence)
+    {
+        $category = new self();
+        $category->essence_id = $essence->id;
+        $category->mode       = self::MODE_TOP;
+
+        return $category->save();
+    }
+
+    /**
+     * Creates top category for essence
+     * @param Essences $essence
+     * @return bool
+     */
+    public static function createBasketCategory(Essences $essence)
+    {
+        $category = new self();
+        $category->essence_id = $essence->id;
+        $category->mode       = self::MODE_BASKET;
+
+        return $category->save();
     }
 
     /**
@@ -255,7 +300,7 @@ class EssencesCategories extends AbstractTreeNode implements
             return $this->id;
         }
 
-        return $this->getField($fieldTemplate->program_name);
+        return $this->getField($fieldTemplate->program_name) . ' (' . $this->id . ' )' ;
     }
 
     /**
@@ -485,7 +530,9 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getOrderQuery()
     {
         return self::find()->where([
-            'mode' => self::MODE_CASUAL,
+            'mode'       => self::MODE_CASUAL,
+            'essence_id' => $this->essence_id,
+            'parent_id'  => $this->parent_id,
         ]);
     }
 
@@ -527,5 +574,13 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getOrderAble()
     {
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSortFieldName()
+    {
+        return 'category_order';
     }
 }

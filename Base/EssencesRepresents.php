@@ -72,6 +72,9 @@ class EssencesRepresents extends ActiveRecord implements
     private $imageHandler;
     /** @var ConditionsHandler instance of condition handler object*/
     private $conditionHandler;
+    /** @var Essences instance  */
+    private $essenceInstance;
+
 
     /**
      * @inheritdoc
@@ -123,11 +126,23 @@ class EssencesRepresents extends ActiveRecord implements
     }
 
     /**
-     * @return mixed
+     * @return Essences
      */
     public function getEssence()
     {
-        //return current($this->categories)->essence;
+        if ($this->essence) return $this->essenceInstance;
+
+        //TODO: find essence from categories;
+    }
+
+    /**
+     * Essences setter
+     * @param Essences $essence
+     * @return void
+     */
+    public function setEssence(Essences $essence)
+    {
+        $this->essenceInstance = $essence;
     }
 
     /**
