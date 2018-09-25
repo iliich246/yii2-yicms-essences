@@ -5,6 +5,7 @@ namespace Iliich246\YicmsEssences\Base;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
+use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
 use Iliich246\YicmsCommon\Languages\LanguagesDb;
 use Iliich246\YicmsCommon\Fields\Field;
@@ -60,6 +61,7 @@ class EssencesCategories extends AbstractTreeNode implements
     ImagesReferenceInterface,
     ConditionsReferenceInterface,
     ConditionsInterface,
+    FictiveInterface,
     SortOrderInterface
 {
     use SortOrderTrait;
@@ -582,5 +584,29 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getSortFieldName()
     {
         return 'category_order';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFictive()
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearFictive()
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFictive()
+    {
+        return false;
     }
 }

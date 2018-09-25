@@ -299,6 +299,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns field_template_reference_category
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getCategoryFieldTemplateReference()
     {
@@ -313,6 +314,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns file_template_reference_category
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getCategoryFileTemplateReference()
     {
@@ -327,6 +329,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns image_template_reference_category
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getCategoryImageTemplateReference()
     {
@@ -341,6 +344,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns condition_template_reference_category
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getCategoryConditionTemplateReference()
     {
@@ -355,6 +359,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns field_template_reference_represent
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getRepresentFieldTemplateReference()
     {
@@ -369,6 +374,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns file_template_reference_represent
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getRepresentFileTemplateReference()
     {
@@ -383,6 +389,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns image_template_reference_represent
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getRepresentImageTemplateReference()
     {
@@ -397,6 +404,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns condition_template_reference_represent
      * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getRepresentConditionTemplateReference()
     {

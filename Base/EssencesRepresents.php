@@ -5,6 +5,7 @@ namespace Iliich246\YicmsEssences\Base;
 use Yii;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
+use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
 use Iliich246\YicmsCommon\Fields\Field;
 use Iliich246\YicmsCommon\Fields\FieldsHandler;
@@ -57,6 +58,7 @@ class EssencesRepresents extends ActiveRecord implements
     ImagesReferenceInterface,
     ConditionsReferenceInterface,
     ConditionsInterface,
+    FictiveInterface,
     SortOrderInterface
 {
     use SortOrderTrait;
@@ -74,6 +76,8 @@ class EssencesRepresents extends ActiveRecord implements
     private $conditionHandler;
     /** @var Essences instance  */
     private $essenceInstance;
+    /** @var bool keeps state of fictive value */
+    private $isFictive = false;
 
 
     /**
@@ -130,7 +134,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function getEssence()
     {
-        if ($this->essence) return $this->essenceInstance;
+        if ($this->essenceInstance) return $this->essenceInstance;
 
         //TODO: find essence from categories;
     }
@@ -148,6 +152,18 @@ class EssencesRepresents extends ActiveRecord implements
     /**
      * @inheritdoc
      */
+    public function save($runValidation = true, $attributeNames = null)
+    {
+        if ($this->scenario == self::SCENARIO_CREATE) {
+            $this->represent_order = $this->maxOrder();
+        }
+
+        return parent::save();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldHandler()
     {
         if (!$this->fieldHandler)
@@ -158,18 +174,31 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getField($name)
     {
+        if ($this->isFictive()) {
+            $fictiveField = new Field();
+            $fictiveField->setFictive();
+
+            $template = FieldTemplate::getInstance($this->getEssence()->getRepresentFieldTemplateReference(), $name);
+            $fictiveField->setTemplate($template);
+
+            return $fictiveField;
+        }
+
         return $this->getFieldHandler()->getField($name);
     }
 
     /**
      * @inheritdoc
+     * @return int|string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFieldTemplateReference()
     {
-        $essence = $this->essence;
+        $essence = $this->essenceInstance;
 
         if (!$essence->field_template_reference_represent) {
             $essence->field_template_reference_represent = FieldTemplate::generateTemplateReference();
@@ -181,6 +210,8 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @return int|string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFieldReference()
     {
@@ -205,6 +236,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFileReference()
     {
@@ -218,6 +250,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFileTemplateReference()
     {
@@ -260,6 +293,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getImageTemplateReference()
     {
@@ -275,6 +309,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getImageReference()
     {
@@ -307,6 +342,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getConditionTemplateReference()
     {
@@ -322,6 +358,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getConditionReference()
     {
@@ -379,5 +416,29 @@ class EssencesRepresents extends ActiveRecord implements
     public function getOrderAble()
     {
         return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFictive()
+    {
+        $this->isFictive = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function clearFictive()
+    {
+        $this->isFictive = false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isFictive()
+    {
+        return $this->isFictive;
     }
 }
