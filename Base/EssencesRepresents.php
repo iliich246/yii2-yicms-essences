@@ -182,6 +182,7 @@ class EssencesRepresents extends ActiveRecord implements
             $fictiveField = new Field();
             $fictiveField->setFictive();
 
+            /** @var FieldTemplate $template */
             $template = FieldTemplate::getInstance($this->getEssence()->getRepresentFieldTemplateReference(), $name);
             $fictiveField->setTemplate($template);
 
