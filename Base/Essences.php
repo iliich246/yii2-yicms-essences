@@ -244,6 +244,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
      * Method return list of category fields for drop down lists
      * This method do not buffer templates
      * @return array
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getCategoriesFieldsList()
     {
@@ -264,6 +265,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
      * Method return list of represents fields for drop down lists
      * This method do not buffer templates
      * @return array
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getRepresentsFieldsList()
     {

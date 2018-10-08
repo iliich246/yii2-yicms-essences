@@ -94,9 +94,39 @@ class EssencesRepresents extends ActiveRecord implements
     public function rules()
     {
         return [
-            [['represent_order', 'editable', 'visible', 'created_at', 'updated_at'], 'integer'],
-            [['system_route', 'ruled_route', 'field_reference', 'file_reference', 'image_reference', 'condition_reference'], 'string', 'max' => 255],
+            [
+                [
+                    'represent_order',
+                    'editable',
+                    'visible',
+                    'created_at',
+                    'updated_at'
+                ],
+                'integer'
+            ],
+            [
+                [
+                    'system_route',
+                    'ruled_route',
+                    'field_reference',
+                    'file_reference',
+                    'image_reference',
+                    'condition_reference'
+                ],
+                'string',
+                'max' => 255
+            ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        $this->visible  = true;
+        $this->editable = true;
+        parent::init();
     }
 
     /**
@@ -105,18 +135,26 @@ class EssencesRepresents extends ActiveRecord implements
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'represent_order' => 'Represent Order',
-            'editable' => 'Editable',
-            'visible' => 'Visible',
+            'editable'     => 'Editable',
+            'visible'      => 'Visible',
             'system_route' => 'System Route',
-            'ruled_route' => 'Ruled Route',
-            'field_reference' => 'Field Reference',
-            'file_reference' => 'File Reference',
-            'image_reference' => 'Image Reference',
-            'condition_reference' => 'Condition Reference',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'ruled_route'  => 'Ruled Route',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scenarios()
+    {
+        return [
+            self::SCENARIO_CREATE => [
+                'editable', 'visible',
+            ],
+            self::SCENARIO_UPDATE => [
+                'editable', 'visible',
+            ],
+            self::SCENARIO_DEFAULT => [],
         ];
     }
 

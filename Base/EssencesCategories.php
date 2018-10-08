@@ -68,7 +68,6 @@ class EssencesCategories extends AbstractTreeNode implements
 
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
-    const SCENARIO_CREATE_TEMPORARY = 2;
 
     const MODE_CASUAL = 0;
     const MODE_BASKET = 1;
@@ -129,7 +128,6 @@ class EssencesCategories extends AbstractTreeNode implements
             self::SCENARIO_UPDATE => [
                 'essence_id', 'parent_id', 'editable', 'visible', 'mode',
             ],
-            self::SCENARIO_CREATE_TEMPORARY => [],
             self::SCENARIO_DEFAULT => [],
         ];
     }
