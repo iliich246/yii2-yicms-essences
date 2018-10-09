@@ -183,7 +183,8 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * Essences getter
-     * @return Essences
+     * @return Essences|null
+     * @throws EssencesException
      */
     public function getEssence()
     {
@@ -249,6 +250,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getField($name)

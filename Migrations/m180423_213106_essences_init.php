@@ -24,6 +24,8 @@ class m180423_213106_essences_init extends Migration
             'is_categories'                          => $this->smallInteger(1),
             'count_subcategories'                    => $this->integer(),
             'is_multiple_categories'                 => $this->smallInteger(),
+            'is_intermediate_categories'             => $this->smallInteger(),
+            'max_categories'                         => $this->smallInteger(),
             'essence_order'                          => $this->integer(),
             'editable'                               => $this->boolean(),
             'visible'                                => $this->boolean(),

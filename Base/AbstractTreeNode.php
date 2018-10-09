@@ -94,7 +94,7 @@ abstract class AbstractTreeNode extends ActiveRecord
     }
 
     /**
-     * Returns name of node for various list
+     * Returns name of node for various lists
      * @param LanguagesDb|null $language
      * @return mixed
      */

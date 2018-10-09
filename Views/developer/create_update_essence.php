@@ -194,6 +194,18 @@ $this->registerJs($js, $this::POS_READY);
 
             <div class="row">
                 <div class="col-xs-12">
+                    <?= $form->field($essence, 'max_categories') ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <?= $form->field($essence, 'is_intermediate_categories')->checkbox() ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
                     <?= $form->field($essence, 'editable')->checkbox() ?>
                 </div>
             </div>

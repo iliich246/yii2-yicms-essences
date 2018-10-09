@@ -18,7 +18,9 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
  * @property string $program_name
  * @property int $is_categories
  * @property int $count_subcategories
- * @property int $is_multiple_categories
+ * @property int $is_multiple_categories is_intermediate_categories
+ * @property int $is_intermediate_categories
+ * @property int $max_categories
  * @property int $essence_order
  * @property bool $editable
  * @property bool $visible
@@ -73,11 +75,13 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
      */
     public function init()
     {
-        $this->visible                = true;
-        $this->editable               = true;
-        $this->is_categories          = true;
-        $this->count_subcategories    = 0;
-        $this->is_multiple_categories = true;
+        $this->visible                    = true;
+        $this->editable                   = true;
+        $this->is_categories              = true;
+        $this->count_subcategories        = 0;
+        $this->is_multiple_categories     = false;
+        $this->is_intermediate_categories = false;
+        $this->max_categories             = 0;
 
         parent::init();
     }
@@ -91,8 +95,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             ['program_name', 'required', 'message' => 'Obligatory input field'],
             ['program_name', 'string', 'max' => '50', 'tooLong' => 'Program name must be less than 50 symbols'],
             ['program_name', 'validateProgramName'],
-            [['is_categories', 'count_subcategories', 'is_multiple_categories', 'essence_order'], 'integer'],
-            [['editable', 'visible'], 'boolean'],
+            [['is_categories', 'count_subcategories', 'essence_order', 'max_categories'], 'integer'],
+            [['editable', 'visible', 'is_multiple_categories', 'is_intermediate_categories'], 'boolean'],
             ['category_form_name_field', 'integer'],
             ['represent_form_name_field', 'integer'],
         ];
@@ -106,11 +110,13 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         return [
             self::SCENARIO_CREATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
-                'category_form_name_field', 'represent_form_name_field', 'count_subcategories'
+                'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
+                'is_intermediate_categories', 'max_categories'
             ],
             self::SCENARIO_UPDATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
-                'category_form_name_field', 'represent_form_name_field', 'count_subcategories'
+                'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
+                'is_intermediate_categories', 'max_categories'
             ],
         ];
     }
@@ -121,12 +127,15 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     public function attributeLabels()
     {
         return [
-            'program_name'              => 'Program Name',
-            'is_categories'             => 'Is Categories',
-            'count_subcategories'       => 'Count Subcategories  (0 - infinity)',
-            'is_multiple_categories'    => 'Is Multiple Categories',
-            'category_form_name_field'  => 'Name forming field for categories',
-            'represent_form_name_field' => 'Name forming field for represents',
+            'program_name'               => 'Program Name',
+            'is_categories'              => 'Is Categories',
+            'count_subcategories'        => 'Count Subcategories  (0 - infinity)',
+            'is_multiple_categories'     => 'Is Multiple Categories',
+            'is_intermediate_categories' => 'Is intermediate categories for represents',
+            'max_categories'             => 'Max count of multiple categories (0 - infinity)',
+            'category_form_name_field'   => 'Name forming field for categories',
+            'represent_form_name_field'  => 'Name forming field for represents',
+
         ];
     }
 
@@ -211,6 +220,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function afterValidate()
     {
@@ -273,6 +283,24 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         //TODO: make this method
         return true;
+    }
+
+    /**
+     * Returns true if essence has categories
+     * @return bool
+     */
+    public function isCategories()
+    {
+        return !!$this->is_categories;
+    }
+
+    /**
+     * Returns true if essence has multiple categories
+     * @return bool
+     */
+    public function isMultipleCategories()
+    {
+        return !!$this->is_multiple_categories;
     }
 
     /**
@@ -454,8 +482,9 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
+     * TODO: not needed
      * Creates top category for this essence
-     * @return bool
+     * @return bool|EssencesCategories
      * @throws EssencesException
      */
     public function createTopCategory()
@@ -491,7 +520,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
     /**
      * Creates basket category for this essence
-     * @return bool
+     * @return bool|EssencesCategories
      * @throws EssencesException
      */
     public function createBasketCategory()
@@ -526,8 +555,10 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
+     * TODO: not needed
      * Return basket category for this essence
-     * @return EssencesCategories
+     * @return bool|EssencesCategories
+     * @throws EssencesException
      */
     public function getTopCategory()
     {
@@ -537,7 +568,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         $topCategory = EssencesCategories::find()
             ->where([
                 'essence_id' => $this->id,
-                'mode'       => EssencesCategories::MODE_TOP,
+                //'mode'       => EssencesCategories::MODE_TOP,
             ])
             ->one();
 
@@ -551,7 +582,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
     /**
      * Return basket category for this essence
-     * @return EssencesCategories
+     * @return bool|EssencesCategories
+     * @throws EssencesException
      */
     public function getBasketCategory()
     {
