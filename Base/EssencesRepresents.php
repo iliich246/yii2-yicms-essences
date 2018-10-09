@@ -4,6 +4,7 @@ namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\behaviors\TimestampBehavior;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
@@ -32,6 +33,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionsReferenceInterface;
  * Class AbstractTreeNode
  *
  * @property int $id
+ * @property int $essence_id
  * @property int $represent_order
  * @property int $editable
  * @property int $visible
@@ -68,16 +70,18 @@ class EssencesRepresents extends ActiveRecord implements
 
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
-    /** @var FilesHandler instance of file handler object*/
+    /** @var FilesHandler instance of file handler object */
     private $fileHandler;
-    /** @var ImagesHandler instance of image handler object*/
+    /** @var ImagesHandler instance of image handler object */
     private $imageHandler;
-    /** @var ConditionsHandler instance of condition handler object*/
+    /** @var ConditionsHandler instance of condition handler object */
     private $conditionHandler;
-    /** @var Essences instance  */
+    /** @var Essences instance */
     private $essenceInstance;
     /** @var bool keeps state of fictive value */
     private $isFictive = false;
+    /** @var array of data from between categories and represents table (many to many) */
+    private $categoriesToRepresentsArray = null;
 
 
     /**
@@ -124,7 +128,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function init()
     {
-        $this->visible  = true;
+        $this->visible = true;
         $this->editable = true;
         parent::init();
     }
@@ -135,10 +139,10 @@ class EssencesRepresents extends ActiveRecord implements
     public function attributeLabels()
     {
         return [
-            'editable'     => 'Editable',
-            'visible'      => 'Visible',
+            'editable' => 'Editable',
+            'visible' => 'Visible',
             'system_route' => 'System Route',
-            'ruled_route'  => 'Ruled Route',
+            'ruled_route' => 'Ruled Route',
         ];
     }
 
@@ -159,6 +163,16 @@ class EssencesRepresents extends ActiveRecord implements
     }
 
     /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class
+        ];
+    }
+
+    /**
      * @return \yii\db\ActiveQuery
      */
     public function getCategories()
@@ -168,13 +182,16 @@ class EssencesRepresents extends ActiveRecord implements
     }
 
     /**
+     * Essences getter
      * @return Essences
      */
     public function getEssence()
     {
         if ($this->essenceInstance) return $this->essenceInstance;
 
-        //TODO: find essence from categories;
+        $this->essenceInstance = Essences::getInstance($this->essence_id);
+
+        return $this->essenceInstance;
     }
 
     /**
@@ -187,6 +204,25 @@ class EssencesRepresents extends ActiveRecord implements
         $this->essenceInstance = $essence;
     }
 
+    private function getRepresentToCategoriesArray()
+    {
+        if (!is_null($this->categoriesToRepresentsArray))
+            return $this->categoriesToRepresentsArray;
+
+        //$this->categoriesToRepresentsArray =
+    }
+
+    public function getCategory()
+    {
+
+    }
+
+    /*public function getCategories()
+    {
+
+    }
+    */
+
     /**
      * @inheritdoc
      */
@@ -194,6 +230,7 @@ class EssencesRepresents extends ActiveRecord implements
     {
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->represent_order = $this->maxOrder();
+            $this->essence_id      = $this->essence->id;
         }
 
         return parent::save();

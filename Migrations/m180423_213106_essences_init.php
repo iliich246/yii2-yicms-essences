@@ -108,6 +108,7 @@ class m180423_213106_essences_init extends Migration
          */
         $this->createTable('{{%essences_represents}}', [
             'id'                  => $this->primaryKey(),
+            'essence_id'          => $this->integer(),
             'represent_order'     => $this->integer(),
             'editable'            => $this->boolean(),
             'visible'             => $this->boolean(),
@@ -120,6 +121,13 @@ class m180423_213106_essences_init extends Migration
             'created_at'          => $this->integer(),
             'updated_at'          => $this->integer(),
         ]);
+
+        $this->addForeignKey('essences_represents-to-essences',
+            '{{%essences_represents}}',
+            'essence_id',
+            '{{%essences}}',
+            'id'
+        );
 
         /**
          * essences_category_represent table
@@ -156,6 +164,8 @@ class m180423_213106_essences_init extends Migration
             '{{%essences_category_represent}}');
         $this->dropTable('{{%essences_category_represent}}');
 
+        $this->dropForeignKey('essences_represents-to-essences',
+            '{{%essences_represents}}');
         $this->dropTable('{{%essences_represents}}');
 
         $this->dropForeignKey('essences_categories-to-essences',

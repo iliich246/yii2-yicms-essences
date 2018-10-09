@@ -49,6 +49,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     private $topCategory;
     /** @var EssencesCategories instance of basket category  */
     private $basketCategory;
+    /** @var self[] buffer array */
+    private static $essencesBuffer = [];
     /** @var bool if true standard fields template for categories will be created on essence create */
     public $createCategoriesStandardFields = false;
     /** @var bool if true standard fields template for represents will be created on essence create */
@@ -129,20 +131,26 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
-     * Returns instance of essence by his name
+     * Returns instance of essence by her name
      * @param $programName
      * @return array|Essences|null|ActiveRecord
      * @throws EssencesException
      */
     public static function getByName($programName)
     {
-        //TODO: makes buffer of essences
+        foreach(self::$essencesBuffer as $essence)
+            if ($essence->program_name == $programName)
+                return $essence;
+
         /** @var self $essence */
         $essence = self::find()
             ->where(['program_name' => $programName])
             ->one();
 
-        if ($essence) return $essence;
+        if ($essence) {
+            self::$essencesBuffer[$essence->id] = $essence;
+            return $essence;
+        }
 
         Yii::error("Сan not find essence with name " . $programName, __METHOD__);
 
@@ -150,7 +158,34 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             throw new EssencesException('Сan not find essence with name ' . $programName);
         }
 
-        return new self();
+        return new self();//TODO: makes mark as empty essence
+    }
+
+    /**
+     * Returns instance of essence by her id
+     * @param $id
+     * @return Essences|null|static
+     * @throws EssencesException
+     */
+    public static function getInstance($id)
+    {
+        if (isset(self::$essencesBuffer[$id]))
+            return self::$essencesBuffer[$id];
+
+        $essence = self::findOne($id);
+
+        if ($essence) {
+            self::$essencesBuffer[$essence->id] = $essence;
+            return $essence;
+        }
+
+        Yii::error("Сan not find essence with id " . $id, __METHOD__);
+
+        if (defined('YICMS_STRICT')) {
+            throw new EssencesException('Сan not find essence with id ' . $id);
+        }
+
+        return new self();//TODO: makes mark as empty essence
     }
 
     /**

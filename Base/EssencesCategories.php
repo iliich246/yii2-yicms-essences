@@ -71,8 +71,6 @@ class EssencesCategories extends AbstractTreeNode implements
 
     const MODE_CASUAL = 0;
     const MODE_BASKET = 1;
-    const MODE_TOP = 2;
-    const MODE_TEMPORARY = 3;
 
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
@@ -129,6 +127,16 @@ class EssencesCategories extends AbstractTreeNode implements
                 'essence_id', 'parent_id', 'editable', 'visible', 'mode',
             ],
             self::SCENARIO_DEFAULT => [],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class
         ];
     }
 
@@ -200,6 +208,12 @@ class EssencesCategories extends AbstractTreeNode implements
 
         return $tempCategory;
     }
+    /*
+    public static function getInstance($id)
+    {
+
+    }
+    */
 
     /**
      * Essence getter
@@ -207,7 +221,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getEssence()
     {
-        return $this->hasOne(Essences::className(), ['id' => 'essence_id']);
+        return Essences::getInstance($this->essence_id);
     }
 
     /**
@@ -293,7 +307,7 @@ class EssencesCategories extends AbstractTreeNode implements
         }
 
         /** @var FieldTemplate $fieldTemplate */
-        $fieldTemplate = FieldTemplate::findOne($nameFormFieldId);
+        $fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId);
 
         if (!$fieldTemplate) {
             //TODO: error message

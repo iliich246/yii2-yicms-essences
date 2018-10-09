@@ -57,6 +57,11 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      *    )
      */
     private $treeStructure = null;
+    /** @var null|array buffer of nodes fetched from db
+     * used for buffered return of nodes by id from linear list
+     * instead recursive calls from special tree structure
+     */
+    private $nodesBuffer = null;
     /** @var int keep style of sorting tree nodes */
     private $sortStyle = self::SORT_ASC;
     /** @var array debug form of tree array */
@@ -80,9 +85,13 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
     {
         if (!(is_null($this->treeStructure))) return $this->treeStructure;
 
+        /** @var AbstractTreeNode[] $nodes */
         $nodes = $this->getTreeNodes();
 
-        if (!$nodes) {
+        foreach($nodes as $node)
+            $this->nodesBuffer[$node->id] = $node;
+
+        if (!$this->nodesBuffer) {
             $this->treeStructure = [];
             return $this->treeStructure;
         }
@@ -150,6 +159,18 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
     }
 
     /**
+     * Return buffered AbstractTreeNode by ID
+     * @param $id
+     * @return null|AbstractTreeNode
+     */
+    public function getNodeById($id)
+    {
+        if (!isset($this->nodesBuffer[$id])) return null;//may be empty category
+
+        return $this->nodesBuffer[$id];
+    }
+
+    /**
      * Only for debug purposes
      * @param $array
      * @return mixed
@@ -157,12 +178,10 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
     private function treeDebugFormRecursive($array)
     {
         foreach($array as $key => $nodeArray) {
-            //throw new \Exception(print_r($nodeArray,true));
 
             $array[$key]['p'] = $array[$key]['node']->parent_id;
             $array[$key]['o'] = $array[$key]['node']->category_order;
             $array[$key]['node'] = $array[$key]['node']->id;
-
 
             if (isset($nodeArray['children'])) {
                 $array[$key]['children'] = $this->treeDebugFormRecursive($nodeArray['children']);
