@@ -202,6 +202,8 @@ class EssencesRepresents extends ActiveRecord implements
 
     public function getRepresentCategoriesList()
     {
+        if (!$this->essence->isCategories()) return null;
+
         $list = [];
 
         $tree = $this->essence->traversalByTreeOrder();
@@ -216,10 +218,13 @@ class EssencesRepresents extends ActiveRecord implements
                     $list[$node->id] = $node;
             }
         }
+        $res = [];
+        /** @var EssencesCategories $item */
+        foreach ($list as $item) {
+            $res[] = $item->getNodeName() . 'L=' . $item->getLevel();
+        }
 
-        //if ()
-
-        return $list;
+        return $res;
     }
 
     /**

@@ -32,7 +32,14 @@ abstract class AbstractTreeNode extends ActiveRecord
      */
     public function isChildren()
     {
+        if ($this->id == 27) {
+            $a = 1;
+            $b = $a + 1;
+        }
+
         $nodeBlock = $this->findNodeBlockInCollection();
+
+
 
         if (isset($nodeBlock['children'])) return true;
         return false;
@@ -63,7 +70,7 @@ abstract class AbstractTreeNode extends ActiveRecord
             if ($this->id == $id) return $nodeBlock;
 
             if (isset($nodeBlock['children'])) {
-                if ($result = $this->findNodeBlockRecursive($nodeBlock))
+                if ($result = $this->findNodeBlockRecursive($nodeBlock['children']))
                     return $this->nodeBlock = $result;
             }
         }
@@ -82,7 +89,7 @@ abstract class AbstractTreeNode extends ActiveRecord
             if ($this->id == $id) return $nodeBlock;
 
             if (isset($nodeBlock['children'])) {
-                if ($result = $this->findNodeBlockRecursive($nodeBlock))
+                if ($result = $this->findNodeBlockRecursive($nodeBlock['children']))
                     return $result;
             }
         }

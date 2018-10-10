@@ -143,6 +143,8 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      */
     public function treeDebugForm()
     {
+        $this->getTreeArray();
+
         $this->debug = $this->treeStructure;
 
         foreach($this->debug as $key => $nodeArray) {
@@ -206,10 +208,13 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
         $tree = [];
         /** @var AbstractTreeNode $parentNode */
         foreach ($currentParent as $parentNode) {
+            $ar = null;
+            
             if (isset($parentNodes[$parentNode->id])) {
                 $ar['node'] = null; //It is convenient that the node is the first element of the array
                 $ar['children'] = $this->buildTree($parentNodes, $parentNodes[$parentNode->id]);
             }
+
             $ar['node'] = $parentNode;
             $tree[$parentNode->id] = $ar;
         }

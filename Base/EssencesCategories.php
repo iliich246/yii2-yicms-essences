@@ -2,7 +2,6 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
-use Iliich246\YicmsEssences\EssencesModule;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -221,7 +220,8 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * Essence getter
-     * @return Essences
+     * @return Essences|null
+     * @throws EssencesException
      */
     public function getEssence()
     {
@@ -317,7 +317,7 @@ class EssencesCategories extends AbstractTreeNode implements
             return $this->id;
         }
 
-        return $this->getField($fieldTemplate->program_name) . ' (' . $this->id . ' )' ;
+        return $this->getField($fieldTemplate->program_name) . ' (' . $this->id . ' )' . 'p=' . $this->parent_id;
     }
 
     /**
@@ -358,6 +358,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFieldTemplateReference()
     {
@@ -373,6 +374,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFieldReference()
     {
@@ -397,6 +399,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFileReference()
     {
@@ -410,6 +413,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFileTemplateReference()
     {
@@ -452,6 +456,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getImageTemplateReference()
     {
@@ -467,6 +472,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getImageReference()
     {
@@ -499,6 +505,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getConditionTemplateReference()
     {
@@ -514,6 +521,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getConditionReference()
     {
