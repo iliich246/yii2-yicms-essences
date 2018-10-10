@@ -68,6 +68,8 @@ class EssencesRepresents extends ActiveRecord implements
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
 
+    public $category;
+
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
     /** @var FilesHandler instance of file handler object */
@@ -120,6 +122,9 @@ class EssencesRepresents extends ActiveRecord implements
                 'string',
                 'max' => 255
             ],
+            [
+                'category', 'validateCategory'
+            ]
         ];
     }
 
@@ -139,10 +144,10 @@ class EssencesRepresents extends ActiveRecord implements
     public function attributeLabels()
     {
         return [
-            'editable' => 'Editable',
-            'visible' => 'Visible',
+            'editable'     => 'Editable',
+            'visible'      => 'Visible',
             'system_route' => 'System Route',
-            'ruled_route' => 'Ruled Route',
+            'ruled_route'  => 'Ruled Route',
         ];
     }
 
@@ -173,12 +178,48 @@ class EssencesRepresents extends ActiveRecord implements
     }
 
     /**
+     * Validates category
+     * @param $attribute
+     * @param $params
+     */
+    public function validateCategory($attribute, $params)
+    {
+        if (!$this->hasErrors()) {
+
+        }
+    }
+
+    /**
      * @return \yii\db\ActiveQuery
      */
     public function getCategories()
     {
+        /*
         return $this->hasMany(EssencesCategories::class, ['id' => 'category_id'])
             ->viaTable('{{%essences_category_represent}}', ['represent_id' => 'id']);
+        */
+    }
+
+    public function getRepresentCategoriesList()
+    {
+        $list = [];
+
+        $tree = $this->essence->traversalByTreeOrder();
+
+        /** @var EssencesCategories $node */
+        foreach($tree as $node) {
+
+            if ($this->essence->is_intermediate_categories) {
+                $list[$node->id] = $node;
+            } else {
+                if (!$node->isChildren())
+                    $list[$node->id] = $node;
+            }
+        }
+
+        //if ()
+
+        return $list;
     }
 
     /**

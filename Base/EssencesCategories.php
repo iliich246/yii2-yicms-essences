@@ -2,6 +2,7 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
+use Iliich246\YicmsEssences\EssencesModule;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -208,6 +209,9 @@ class EssencesCategories extends AbstractTreeNode implements
 
         return $tempCategory;
     }
+
+
+
     /*
     public static function getInstance($id)
     {
@@ -290,7 +294,6 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function delete()
     {
-
         return parent::delete();
     }
 
@@ -323,22 +326,6 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getNodeName(LanguagesDb $language = null)
     {
         return static::name();
-    }
-
-    public function killTempCategories()
-    {
-        /** @var self $temps */
-        $temps = self::find()->where([
-            'essence_id' => $this->essence->id,
-            'mode'       => self::MODE_TEMPORARY
-        ])->all();
-
-        foreach ($temps as $temp) {
-
-            //TODO: kill all fields and other
-
-            $temp->delete();
-        }
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
+use Iliich246\YicmsEssences\EssencesModule;
 use Yii;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -343,6 +344,31 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             $result[$fieldTemplate->id] = $fieldTemplate->program_name;
 
         return $result;
+    }
+
+    /**
+     * Returns list of categories for categories lists
+     * @return array
+     */
+    public function getListForCategories()
+    {
+        $list = [];
+
+        $list[0] = EssencesModule::t('app', 'Root category');
+
+        $treeOrder = $this->traversalByTreeOrder();
+
+        /** @var EssencesCategories $elem */
+        foreach($treeOrder as $elem) {
+
+            $levelString = '';
+            for ($i = 1; $i < $elem->getLevel(); $i++)
+                $levelString .= '-';
+
+            $list[$elem->id] = $levelString . $elem->getNodeName();
+        }
+
+        return $list;
     }
 
     /**

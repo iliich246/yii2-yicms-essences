@@ -23,6 +23,72 @@ abstract class AbstractTreeNode extends ActiveRecord
     private $collection = null;
     /** @var integer level of node in tree structure  */
     private $level = null;
+    /** @var null|array of node block in tree collection (only for buffer purposes) */
+    private $nodeBlock = null;
+
+    /**
+     * Returns true, if node has children
+     * @return bool
+     */
+    public function isChildren()
+    {
+        $nodeBlock = $this->findNodeBlockInCollection();
+
+        if (isset($nodeBlock['children'])) return true;
+        return false;
+    }
+
+    /**
+     * Returns array of children of this node, if none returns empty array
+     * @return array
+     */
+    public function getChildren()
+    {
+        $nodeBlock = $this->findNodeBlockInCollection();
+
+        if (isset($nodeBlock['children'])) return $nodeBlock['children'];
+        return [];
+    }
+
+    /**
+     * Find node block in collection
+     * @return array|bool|null
+     */
+    private function findNodeBlockInCollection()
+    {
+        if (!is_null($this->nodeBlock)) return $this->nodeBlock;
+
+        foreach($this->collection->getTreeArray() as $id => $nodeBlock) {
+
+            if ($this->id == $id) return $nodeBlock;
+
+            if (isset($nodeBlock['children'])) {
+                if ($result = $this->findNodeBlockRecursive($nodeBlock))
+                    return $this->nodeBlock = $result;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Find node block recursive method
+     * @param $nodeBlockParam
+     * @return bool
+     */
+    private function findNodeBlockRecursive($nodeBlockParam)
+    {
+        foreach($nodeBlockParam as $id => $nodeBlock) {
+            if ($this->id == $id) return $nodeBlock;
+
+            if (isset($nodeBlock['children'])) {
+                if ($result = $this->findNodeBlockRecursive($nodeBlock))
+                    return $result;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Returns level of node in tree collection

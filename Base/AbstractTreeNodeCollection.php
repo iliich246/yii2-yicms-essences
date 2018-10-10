@@ -62,6 +62,10 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      * instead recursive calls from special tree structure
      */
     private $nodesBuffer = null;
+    /** @var null|array buffer for list command */
+    private $listBuffer = null;
+    /** @var null|array buffer for tree order */
+    private $treeBuffer = null;
     /** @var int keep style of sorting tree nodes */
     private $sortStyle = self::SORT_ASC;
     /** @var array debug form of tree array */
@@ -220,9 +224,11 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      */
     public function getList(LanguagesDb $language = null)
     {
+       // if (!is_null($this->listBuffer)) return $this->listBuffer;
+
         $tree = $this->getTreeArray();
 
-        $result[0] = EssencesModule::t('app', 'Root category');
+        $result = [];
 
         if (!$tree) return $result;
         
@@ -232,7 +238,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
             $result += $this->traversalForList($topNode, 1, $language);
         }
 
-        return $result;
+        return $this->listBuffer = $result;
     }
 
     /**
@@ -271,6 +277,8 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      */
     public function traversalByTreeOrder()
     {
+        if (!is_null($this->treeBuffer)) return $this->treeBuffer;
+
         $tree = $this->getTreeArray();
 
         if (!$tree) return [];
@@ -280,7 +288,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
             $result += $this->recursiveTraversalByTreeOrder($topNode, 1);
         }
 
-        return $result;
+        return $this->treeBuffer = $result;
     }
 
     /**
