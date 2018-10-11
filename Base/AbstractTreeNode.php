@@ -20,11 +20,29 @@ use Iliich246\YicmsCommon\Languages\LanguagesDb;
 abstract class AbstractTreeNode extends ActiveRecord
 {
     /** @var AbstractTreeNodeCollection instance that keep this node */
-    private $collection = null;
+    protected $collection = null;
     /** @var integer level of node in tree structure  */
     private $level = null;
     /** @var null|array of node block in tree collection (only for buffer purposes) */
     private $nodeBlock = null;
+
+    /**
+     * Sets collection that keep this node
+     * @param AbstractTreeNodeCollection $collection
+     */
+    public function setCollection(AbstractTreeNodeCollection $collection)
+    {
+        $this->collection = $collection;
+    }
+
+    /**
+     * Returns AbstractTreeNodeCollection for this node
+     * @return AbstractTreeNodeCollection
+     */
+    protected function getCollection()
+    {
+        return $this->collection;
+    }
 
     /**
      * Returns true, if node has children
@@ -157,14 +175,7 @@ abstract class AbstractTreeNode extends ActiveRecord
         return false;
     }
 
-    /**
-     * Sets collection that keep this node
-     * @param AbstractTreeNodeCollection $collection
-     */
-    public function setCollection(AbstractTreeNodeCollection $collection)
-    {
-        $this->collection = $collection;
-    }
+
 
     /**
      * Returns name of node for various lists

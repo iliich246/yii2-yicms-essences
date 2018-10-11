@@ -2,7 +2,6 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
-use Iliich246\YicmsEssences\EssencesModule;
 use Yii;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -11,6 +10,7 @@ use Iliich246\YicmsCommon\Fields\FieldTemplate;
 use Iliich246\YicmsCommon\Files\FilesBlock;
 use Iliich246\YicmsCommon\Images\ImagesBlock;
 use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
+use Iliich246\YicmsEssences\EssencesModule;
 
 /**
  * Class Essences
@@ -19,7 +19,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
  * @property string $program_name
  * @property int $is_categories
  * @property int $count_subcategories
- * @property int $is_multiple_categories is_intermediate_categories
+ * @property int $is_multiple_categories
  * @property int $is_intermediate_categories
  * @property int $max_categories
  * @property int $essence_order
@@ -36,8 +36,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
  * @property string $image_template_reference_represent
  * @property string $condition_template_reference_represent
  *
- * @property EssencesCategories[] $essencesCategories
- * @property EssencesNamesTranslatesDb[] $essencesNamesTranslates
+ * @property EssencesCategories[] $categories
  *
  * @author iliich246 <iliich246@gmail.com>
  */
@@ -230,14 +229,14 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         if ($this->hasErrors()) return;
 
         if ($this->scenario == self::SCENARIO_CREATE) {
-            $this->field_template_reference_category  = FieldTemplate::generateTemplateReference();
-            $this->field_template_reference_represent = FieldTemplate::generateTemplateReference();
+            $this->field_template_reference_category      = FieldTemplate::generateTemplateReference();
+            $this->field_template_reference_represent     = FieldTemplate::generateTemplateReference();
 
-            $this->file_template_reference_category  = FilesBlock::generateTemplateReference();
-            $this->file_template_reference_represent = FilesBlock::generateTemplateReference();
+            $this->file_template_reference_category       = FilesBlock::generateTemplateReference();
+            $this->file_template_reference_represent      = FilesBlock::generateTemplateReference();
 
-            $this->image_template_reference_category  = ImagesBlock::generateTemplateReference();
-            $this->image_template_reference_represent =  ImagesBlock::generateTemplateReference();
+            $this->image_template_reference_category      = ImagesBlock::generateTemplateReference();
+            $this->image_template_reference_represent     =  ImagesBlock::generateTemplateReference();
 
             $this->condition_template_reference_category  = ConditionTemplate::generateTemplateReference();
             $this->condition_template_reference_represent = ConditionTemplate::generateTemplateReference();
@@ -302,6 +301,11 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     public function isMultipleCategories()
     {
         return !!$this->is_multiple_categories;
+    }
+
+    public function getCategories()
+    {
+        return $this->traversalByTreeOrder();
     }
 
     /**

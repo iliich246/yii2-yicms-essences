@@ -4,6 +4,7 @@ namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
+use Iliich246\YicmsCommon\CommonModule;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
@@ -28,6 +29,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
 use Iliich246\YicmsCommon\Conditions\ConditionsHandler;
 use Iliich246\YicmsCommon\Conditions\ConditionsInterface;
 use Iliich246\YicmsCommon\Conditions\ConditionsReferenceInterface;
+use Iliich246\YicmsEssences\EssencesModule;
 
 /**
  * Class EssencesCategories
@@ -108,9 +110,38 @@ class EssencesCategories extends AbstractTreeNode implements
     public function rules()
     {
         return [
-            [['essence_id', 'parent_id', 'editable', 'visible', 'mode', 'category_order', 'created_at', 'updated_at'], 'integer'],
-            [['system_route', 'ruled_route', 'field_reference', 'file_reference', 'image_reference', 'condition_reference'], 'string', 'max' => 255],
-            [['essence_id'], 'exist', 'skipOnError' => true, 'targetClass' => Essences::className(), 'targetAttribute' => ['essence_id' => 'id']],
+            [
+                [
+                    'essence_id',
+                    'parent_id',
+                    'editable',
+                    'visible', 'mode',
+                    'category_order',
+                    'created_at',
+                    'updated_at'
+                ],
+                'integer'
+            ], [
+                [
+                    'system_route',
+                    'ruled_route',
+                    'field_reference',
+                    'file_reference',
+                    'image_reference',
+                    'condition_reference'
+                ],
+                'string',
+                'max' => 255
+            ], [
+                ['essence_id'],
+                'exist',
+                'skipOnError' => true,
+                'targetClass' => Essences::className(),
+                'targetAttribute' => ['essence_id' => 'id']
+            ],
+            [
+                'parent_id', 'validateParent'
+            ]
         ];
     }
 
@@ -121,10 +152,10 @@ class EssencesCategories extends AbstractTreeNode implements
     {
         return [
             self::SCENARIO_CREATE => [
-                'essence_id', 'parent_id', 'editable', 'visible', 'mode',
+                'parent_id', 'editable', 'visible',
             ],
             self::SCENARIO_UPDATE => [
-                'essence_id', 'parent_id', 'editable', 'visible', 'mode',
+                'parent_id', 'editable', 'visible',
             ],
             self::SCENARIO_DEFAULT => [],
         ];
@@ -162,6 +193,25 @@ class EssencesCategories extends AbstractTreeNode implements
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
+    }
+
+    /**
+     * Validates the program name.
+     * This method serves as the inline validation for page program name.
+     *
+     * @param string $attribute the attribute currently being validated
+     * @param array $params the additional name-value pairs given in the rule
+     */
+    public function validateParent($attribute, $params)
+    {
+        if (!$this->hasErrors()) {
+            if (!CommonModule::isUnderDev() &&
+                ($this->getEssence()->count_subcategories > 0) &&
+                ($this->getLevel() > $this->getEssence()->count_subcategories - 2)) {
+
+                $this->addError($attribute, EssencesModule::t('app', 'Wrong parent category'));
+            }
+        }
     }
 
     /**
@@ -225,16 +275,18 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getEssence()
     {
-        return Essences::getInstance($this->essence_id);
+        if ($this->collection) return $this->collection;
+
+        return $this->collection = Essences::getInstance($this->essence_id);
     }
 
     /**
      * Essence setter
-     * @param $essence
+     * @param Essences $essence
      */
-    public function setEssence($essence)
+    public function setEssence(Essences $essence)
     {
-        $this->essence = $essence;
+        $this->setCollection($essence);
     }
 
     /**
@@ -259,6 +311,51 @@ class EssencesCategories extends AbstractTreeNode implements
         }
 
         return parent::save();
+    }
+
+    /**
+     * Creates list of categories for create/update category drop lists
+     * @return array
+     * @throws EssencesException
+     */
+    public function getCategoriesForDropList()
+    {
+        $list = [];
+
+        $list[0] = EssencesModule::t('app', 'Root category');
+
+        $tree = $this->getEssence()->getCategories();
+
+        /** @var EssencesCategories $node */
+        foreach($tree as $node) {
+            if ($this->scenario == self::SCENARIO_UPDATE && $node->id == $this->id)
+                continue;
+
+            if (!CommonModule::isUnderDev() &&
+                ($this->getEssence()->count_subcategories > 0) &&
+                ($node->getLevel() > $this->getEssence()->count_subcategories - 2)
+            )
+                continue;
+
+            $levelString = '';
+            for ($i = 0; $i < $node->getLevel(); $i++)
+                $levelString .= '-';
+
+            $list[$node->id] = $levelString . $node->getNodeName();
+
+            if (!CommonModule::isUnderDev()) continue;
+
+            $devString = ' |DEV:';
+            $devString .= ' id=' . $node->id;
+
+            if ($this->getEssence()->count_subcategories > 0 &&
+                $node->getLevel() > $this->getEssence()->count_subcategories - 2)
+                $devString .= ' (only dev can use this)';
+
+            $list[$node->id] .= $devString;
+        }
+
+        return $list;
     }
 
     /**
@@ -303,7 +400,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function name()
     {
-        $nameFormFieldId = $this->essence->category_form_name_field;
+        $nameFormFieldId = $this->getEssence()->category_form_name_field;
 
         if (!$nameFormFieldId) {
             return $this->id;
