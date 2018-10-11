@@ -84,8 +84,15 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      * @param $id
      * @return null|AbstractTreeNode
      */
-    public function getNodeById($id)
+    protected function getNodeById($id)
     {
+        if (is_null($this->treeStructure)) {
+            if (isset($this->nodesBuffer[$id]))
+                return $this->nodesBuffer[$id];
+
+            return $this->nodesBuffer[$id] = $this->getTreeNode($id);
+        }
+
         if (is_null($this->nodesBuffer))
             $this->getTreeArray();
 
@@ -233,7 +240,6 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
             $this->debug[$key]['o'] = $this->debug[$key]['node']->category_order;
             $this->debug[$key]['node'] = $this->debug[$key]['node']->id;
 
-
             if (isset($nodeArray['children'])) {
                 $this->debug[$key]['children'] = $this->treeDebugFormRecursive($nodeArray['children']);
             } else {
@@ -243,8 +249,6 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
 
         return $this->debug;
     }
-
-
 
     /**
      * Only for debug purposes
@@ -272,4 +276,10 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      * @return AbstractTreeNode[]
      */
     abstract protected function getTreeNodes();
+
+    /**
+     * @param $id
+     * @return AbstractTreeNode
+     */
+    abstract protected function getTreeNode($id);
 }

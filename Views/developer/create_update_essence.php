@@ -175,8 +175,11 @@ $this->registerJs($js, $this::POS_READY);
             </div>
 
             <div class="row">
-                <div class="col-xs-12">
+                <div class="col-xs-6">
                     <?= $form->field($essence, 'is_categories')->checkbox() ?>
+                </div>
+                <div class="col-xs-6">
+                    <?= $form->field($essence, 'categories_create_by_user')->checkbox() ?>
                 </div>
             </div>
 

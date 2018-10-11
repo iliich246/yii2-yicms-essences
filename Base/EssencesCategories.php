@@ -196,11 +196,13 @@ class EssencesCategories extends AbstractTreeNode implements
     }
 
     /**
-     * Validates the program name.
-     * This method serves as the inline validation for page program name.
+     *
+     * Validates the parent of category.
+     * This method serves as the inline validation for category parent id.
      *
      * @param string $attribute the attribute currently being validated
      * @param array $params the additional name-value pairs given in the rule
+     * @throws EssencesException
      */
     public function validateParent($attribute, $params)
     {
@@ -397,6 +399,7 @@ class EssencesCategories extends AbstractTreeNode implements
     /**
      * Returns name of category via name forming field
      * @return string
+     * @throws EssencesException
      */
     public function name()
     {
@@ -419,6 +422,7 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      */
     public function getNodeName(LanguagesDb $language = null)
     {

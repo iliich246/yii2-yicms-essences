@@ -22,6 +22,7 @@ class m180423_213106_essences_init extends Migration
             'id'                                     => $this->primaryKey(),
             'program_name'                           => $this->string(50),
             'is_categories'                          => $this->smallInteger(1),
+            'categories_create_by_user'              => $this->boolean(),
             'count_subcategories'                    => $this->integer(),
             'is_multiple_categories'                 => $this->smallInteger(),
             'is_intermediate_categories'             => $this->smallInteger(),

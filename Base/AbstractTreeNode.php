@@ -50,14 +50,7 @@ abstract class AbstractTreeNode extends ActiveRecord
      */
     public function isChildren()
     {
-        if ($this->id == 27) {
-            $a = 1;
-            $b = $a + 1;
-        }
-
         $nodeBlock = $this->findNodeBlockInCollection();
-
-
 
         if (isset($nodeBlock['children'])) return true;
         return false;

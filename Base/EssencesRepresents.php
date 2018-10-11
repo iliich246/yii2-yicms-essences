@@ -82,9 +82,6 @@ class EssencesRepresents extends ActiveRecord implements
     private $essenceInstance;
     /** @var bool keeps state of fictive value */
     private $isFictive = false;
-    /** @var array of data from between categories and represents table (many to many) */
-    private $categoriesToRepresentsArray = null;
-
 
     /**
      * @inheritdoc
@@ -194,37 +191,48 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function getCategories()
     {
+        //$this->getEssence()->getC
         /*
         return $this->hasMany(EssencesCategories::class, ['id' => 'category_id'])
             ->viaTable('{{%essences_category_represent}}', ['represent_id' => 'id']);
         */
     }
 
-    public function getRepresentCategoriesList()
+    /**
+     * @throws EssencesException
+     */
+    public function getCategoriesForDropList()
     {
-        if (!$this->essence->isCategories()) return null;
+        $currentCategories = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
 
-        $list = [];
+        foreach ($this->getEssence()->getCategories() as $category) {
 
-        $tree = $this->essence->traversalByTreeOrder();
-
-        /** @var EssencesCategories $node */
-        foreach($tree as $node) {
-
-            if ($this->essence->is_intermediate_categories) {
-                $list[$node->id] = $node;
-            } else {
-                if (!$node->isChildren())
-                    $list[$node->id] = $node;
-            }
-        }
-        $res = [];
-        /** @var EssencesCategories $item */
-        foreach ($list as $item) {
-            $res[] = $item->getNodeName() . 'L=' . $item->getLevel();
         }
 
-        return $res;
+        //$
+//        if (!$this->essence->isCategories()) return null;
+//
+//        $list = [];
+//
+//        $tree = $this->essence->traversalByTreeOrder();
+//
+//        /** @var EssencesCategories $node */
+//        foreach($tree as $node) {
+//
+//            if ($this->essence->is_intermediate_categories) {
+//                $list[$node->id] = $node;
+//            } else {
+//                if (!$node->isChildren())
+//                    $list[$node->id] = $node;
+//            }
+//        }
+//        $res = [];
+//        /** @var EssencesCategories $item */
+//        foreach ($list as $item) {
+//            $res[] = $item->getNodeName() . 'L=' . $item->getLevel();
+//        }
+//
+//        return $res;
     }
 
     /**
@@ -251,13 +259,6 @@ class EssencesRepresents extends ActiveRecord implements
         $this->essenceInstance = $essence;
     }
 
-    private function getRepresentToCategoriesArray()
-    {
-        if (!is_null($this->categoriesToRepresentsArray))
-            return $this->categoriesToRepresentsArray;
-
-        //$this->categoriesToRepresentsArray =
-    }
 
     public function getCategory()
     {

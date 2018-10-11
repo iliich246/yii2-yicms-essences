@@ -18,6 +18,7 @@ use Iliich246\YicmsEssences\EssencesModule;
  * @property int $id
  * @property string $program_name
  * @property int $is_categories
+ * @property int $categories_create_by_user
  * @property int $count_subcategories
  * @property int $is_multiple_categories
  * @property int $is_intermediate_categories
@@ -78,6 +79,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         $this->visible                    = true;
         $this->editable                   = true;
         $this->is_categories              = true;
+        $this->categories_create_by_user  = true;
         $this->count_subcategories        = 0;
         $this->is_multiple_categories     = false;
         $this->is_intermediate_categories = false;
@@ -96,7 +98,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             ['program_name', 'string', 'max' => '50', 'tooLong' => 'Program name must be less than 50 symbols'],
             ['program_name', 'validateProgramName'],
             [['is_categories', 'count_subcategories', 'essence_order', 'max_categories'], 'integer'],
-            [['editable', 'visible', 'is_multiple_categories', 'is_intermediate_categories'], 'boolean'],
+            [['editable', 'visible', 'is_multiple_categories', 'is_intermediate_categories', 'categories_create_by_user'], 'boolean'],
             ['category_form_name_field', 'integer'],
             ['represent_form_name_field', 'integer'],
         ];
@@ -111,12 +113,12 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             self::SCENARIO_CREATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
                 'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
-                'is_intermediate_categories', 'max_categories'
+                'is_intermediate_categories', 'max_categories', 'categories_create_by_user'
             ],
             self::SCENARIO_UPDATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
                 'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
-                'is_intermediate_categories', 'max_categories'
+                'is_intermediate_categories', 'max_categories', 'categories_create_by_user'
             ],
         ];
     }
@@ -129,6 +131,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         return [
             'program_name'               => 'Program Name',
             'is_categories'              => 'Is Categories',
+            'categories_create_by_user'  => 'Categories can be created by admin',
             'count_subcategories'        => 'Count Subcategories  (0 - infinity)',
             'is_multiple_categories'     => 'Is Multiple Categories',
             'is_intermediate_categories' => 'Is intermediate categories for represents',
@@ -137,6 +140,52 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             'represent_form_name_field'  => 'Name forming field for represents',
 
         ];
+    }
+
+    /**
+     * Validates the program name.
+     * This method serves as the inline validation for page program name.
+     *
+     * @param string $attribute the attribute currently being validated
+     * @param array $params the additional name-value pairs given in the rule
+     */
+    public function validateProgramName($attribute, $params)
+    {
+        if (!$this->hasErrors()) {
+
+            $essencesQuery = self::find()->where(['program_name' => $this->program_name]);
+
+            if ($this->scenario == self::SCENARIO_UPDATE)
+                $essencesQuery->andWhere(['not in', 'program_name', $this->getOldAttribute('program_name')]);
+
+            $essences = $essencesQuery->all();
+            if ($essences)$this->addError($attribute, 'Essence with same name already exist in system');
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function afterValidate()
+    {
+        parent::afterValidate();
+
+        if ($this->hasErrors()) return;
+
+        if ($this->scenario == self::SCENARIO_CREATE) {
+            $this->field_template_reference_category      = FieldTemplate::generateTemplateReference();
+            $this->field_template_reference_represent     = FieldTemplate::generateTemplateReference();
+
+            $this->file_template_reference_category       = FilesBlock::generateTemplateReference();
+            $this->file_template_reference_represent      = FilesBlock::generateTemplateReference();
+
+            $this->image_template_reference_category      = ImagesBlock::generateTemplateReference();
+            $this->image_template_reference_represent     =  ImagesBlock::generateTemplateReference();
+
+            $this->condition_template_reference_category  = ConditionTemplate::generateTemplateReference();
+            $this->condition_template_reference_represent = ConditionTemplate::generateTemplateReference();
+        }
     }
 
     /**
@@ -198,49 +247,13 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
-     * Validates the program name.
-     * This method serves as the inline validation for page program name.
-     *
-     * @param string $attribute the attribute currently being validated
-     * @param array $params the additional name-value pairs given in the rule
+     * Returns category by id
+     * @param $id
+     * @return AbstractTreeNode|null
      */
-    public function validateProgramName($attribute, $params)
+    public function getCategoryById($id)
     {
-        if (!$this->hasErrors()) {
-
-            $essencesQuery = self::find()->where(['program_name' => $this->program_name]);
-
-            if ($this->scenario == self::SCENARIO_UPDATE)
-                $essencesQuery->andWhere(['not in', 'program_name', $this->getOldAttribute('program_name')]);
-
-            $essences = $essencesQuery->all();
-            if ($essences)$this->addError($attribute, 'Essence with same name already exist in system');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * @throws \Iliich246\YicmsCommon\Base\CommonException
-     */
-    public function afterValidate()
-    {
-        parent::afterValidate();
-
-        if ($this->hasErrors()) return;
-
-        if ($this->scenario == self::SCENARIO_CREATE) {
-            $this->field_template_reference_category      = FieldTemplate::generateTemplateReference();
-            $this->field_template_reference_represent     = FieldTemplate::generateTemplateReference();
-
-            $this->file_template_reference_category       = FilesBlock::generateTemplateReference();
-            $this->file_template_reference_represent      = FilesBlock::generateTemplateReference();
-
-            $this->image_template_reference_category      = ImagesBlock::generateTemplateReference();
-            $this->image_template_reference_represent     =  ImagesBlock::generateTemplateReference();
-
-            $this->condition_template_reference_category  = ConditionTemplate::generateTemplateReference();
-            $this->condition_template_reference_represent = ConditionTemplate::generateTemplateReference();
-        }
+        return $this->getNodeById($id);
     }
 
     /**
@@ -303,6 +316,19 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         return !!$this->is_multiple_categories;
     }
 
+    /**
+     * Returns true if user can create categories
+     * @return bool
+     */
+    public function canCreateCategoryByAdmin()
+    {
+        return !!$this->categories_create_by_user;
+    }
+
+    /**
+     *
+     * @return AbstractTreeNode[]
+     */
     public function getCategories()
     {
         return $this->traversalByTreeOrder();
@@ -700,5 +726,17 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             'essence_id' => $this->id,
             'mode'       => EssencesCategories::MODE_CASUAL
         ])->all();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getTreeNode($id)
+    {
+        return EssencesCategories::find()->where([
+            'id'         => $id,
+            'essence_id' => $this->id,
+            'mode'       => EssencesCategories::MODE_CASUAL
+        ])->one();
     }
 }
