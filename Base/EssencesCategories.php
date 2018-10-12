@@ -177,21 +177,9 @@ class EssencesCategories extends AbstractTreeNode implements
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'essence_id' => 'Essence ID',
             'parent_id' => 'Parent ID',
-            'editable' => 'Editable',
-            'visible' => 'Visible',
-            'mode' => 'Mode',
-            'category_order' => 'Category Order',
-            'system_route' => 'System Route',
-            'ruled_route' => 'Ruled Route',
-            'field_reference' => 'Field Reference',
-            'file_reference' => 'File Reference',
-            'image_reference' => 'Image Reference',
-            'condition_reference' => 'Condition Reference',
-            'created_at' => 'Created At',
-            'updated_at' => 'Updated At',
+            'editable'  => 'Editable',
+            'visible'   => 'Visible',
         ];
     }
 
@@ -215,60 +203,6 @@ class EssencesCategories extends AbstractTreeNode implements
             }
         }
     }
-
-    /**
-     * Return instance of essence category for create mode
-     * In this mode this method will search
-     * @param Essences $essence
-     * @return EssencesCategories|mixed
-     * @throws \Exception
-     * @throws \Throwable
-     */
-    public static function instanceForCreateMode(Essences $essence)
-    {
-        /** @var self[] $temporaryCategories */
-        $temporaryCategories = self::find()->where([
-            'essence_id' => $essence->id,
-            'mode'       => self::MODE_TEMPORARY
-        ])->all();
-
-        if (count($temporaryCategories) > 1) {
-            /** @var self $tempCategory */
-            $tempCategory = array_shift($temporaryCategories);
-
-            foreach($temporaryCategories as $temp)
-                $temp->delete();
-
-            $tempCategory->essence = $essence;
-
-            return $tempCategory;
-        }
-
-        if ($temporaryCategories) {
-            /** @var self $tempCategory */
-            $tempCategory = array_shift($temporaryCategories);
-            $tempCategory->essence = $essence;
-            return $tempCategory;
-        }
-
-        $tempCategory            = new self;
-        $tempCategory->essence   = $essence;
-        $tempCategory->mode      = self::MODE_TEMPORARY;
-        $tempCategory->parent_id = 0;
-
-        throw new \Exception(print_r($tempCategory,true));
-
-        return $tempCategory;
-    }
-
-
-
-    /*
-    public static function getInstance($id)
-    {
-
-    }
-    */
 
     /**
      * Essence getter
@@ -296,7 +230,8 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function save($runValidation = true, $attributeNames = null)
     {
-        //throw new \yii\base\Exception(print_r($this, true));
+        if ($this->mode == self::MODE_BASKET)
+            return parent::save();
 
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_id     = $this->essence->id;
@@ -305,8 +240,6 @@ class EssencesCategories extends AbstractTreeNode implements
         }
 
         if ($this->scenario == self::SCENARIO_UPDATE) {
-
-            //throw new \Exception(print_r($this->oldAttributes,true));
             if ($this->oldAttributes['parent_id'] != $this->parent_id) {
                 $this->category_order = $this->maxOrder();
             }
@@ -370,20 +303,6 @@ class EssencesCategories extends AbstractTreeNode implements
         $category = new self();
         $category->essence_id = $essence->id;
         $category->mode       = self::MODE_TOP;
-
-        return $category->save();
-    }
-
-    /**
-     * Creates top category for essence
-     * @param Essences $essence
-     * @return bool
-     */
-    public static function createBasketCategory(Essences $essence)
-    {
-        $category = new self();
-        $category->essence_id = $essence->id;
-        $category->mode       = self::MODE_BASKET;
 
         return $category->save();
     }

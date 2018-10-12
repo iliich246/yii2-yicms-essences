@@ -5,6 +5,7 @@ namespace Iliich246\YicmsEssences\Base;
 use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
+use Iliich246\YicmsCommon\CommonModule;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
@@ -82,6 +83,10 @@ class EssencesRepresents extends ActiveRecord implements
     private $essenceInstance;
     /** @var bool keeps state of fictive value */
     private $isFictive = false;
+    /** @var EssencesCategories[]|null buffer of categories for this represent */
+    private $categoriesBuffer = null;
+    /** @var null|bool variable keeps represent basket stage  */
+    private $isInBasket = null;
 
     /**
      * @inheritdoc
@@ -155,10 +160,10 @@ class EssencesRepresents extends ActiveRecord implements
     {
         return [
             self::SCENARIO_CREATE => [
-                'editable', 'visible',
+                'editable', 'visible', 'category'
             ],
             self::SCENARIO_UPDATE => [
-                'editable', 'visible',
+                'editable', 'visible','category'
             ],
             self::SCENARIO_DEFAULT => [],
         ];
@@ -182,57 +187,114 @@ class EssencesRepresents extends ActiveRecord implements
     public function validateCategory($attribute, $params)
     {
         if (!$this->hasErrors()) {
-
+            $this->addError($attribute, 'PENIS');
         }
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * Return array of categories of this represent
+     * @return EssencesCategories[]
      */
     public function getCategories()
     {
-        //$this->getEssence()->getC
-        /*
-        return $this->hasMany(EssencesCategories::class, ['id' => 'category_id'])
-            ->viaTable('{{%essences_category_represent}}', ['represent_id' => 'id']);
-        */
+        if (!is_null($this->categoriesBuffer)) return $this->categoriesBuffer;
+
+        foreach(EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id) as $categoryId) {
+            $category = $this->getEssence()->getCategoryById($categoryId);
+
+            if ($category)
+                $this->categoriesBuffer[$category->id] = $category;
+        }
+
+        return $this->categoriesBuffer;
     }
 
+//    public function getCategory()
+//    {
+//        //if (!is_null($this->categoriesBuffer)) return first($this->categoriesBuffer);
+//    }
+
     /**
+     * Creates list of categories for create/update represent drop lists
      * @throws EssencesException
      */
     public function getCategoriesForDropList()
     {
-        $currentCategories = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
+        $list = [];
 
         foreach ($this->getEssence()->getCategories() as $category) {
+            if ($this->scenario == self::SCENARIO_UPDATE && in_array($category->id, EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))) {
+                $list[$category->id] = 'same !!!there for debug only!!!';
+                continue;
+            }
 
+            if (!CommonModule::isUnderDev() &&
+                !$this->getEssence()->isIntermediateCategories() &&
+                $category->isChildren())
+                    continue;
+
+            $list[$category->id] = $category->getNodeName();
+
+            if (!CommonModule::isUnderDev()) continue;
+
+            $devString = ' |DEV:';
+            $devString .= ' id=' . $category->id;
+
+            if (!$this->getEssence()->isIntermediateCategories() && $category->isChildren())
+                $devString .= ' (only dev can use this)';
+
+            $list[$category->id] .= $devString;
         }
 
-        //$
-//        if (!$this->essence->isCategories()) return null;
-//
-//        $list = [];
-//
-//        $tree = $this->essence->traversalByTreeOrder();
-//
-//        /** @var EssencesCategories $node */
-//        foreach($tree as $node) {
-//
-//            if ($this->essence->is_intermediate_categories) {
-//                $list[$node->id] = $node;
-//            } else {
-//                if (!$node->isChildren())
-//                    $list[$node->id] = $node;
-//            }
-//        }
-//        $res = [];
-//        /** @var EssencesCategories $item */
-//        foreach ($list as $item) {
-//            $res[] = $item->getNodeName() . 'L=' . $item->getLevel();
-//        }
-//
-//        return $res;
+        return $list;
+    }
+
+    /**
+     * Returns true if represent in basket
+     * @return bool
+     */
+    public function isInBasket()
+    {
+        if ($this->isInBasket) return $this->isInBasket;
+
+        $count = EssenceRepresentToCategory::find()->where([
+            'represent_id' => $this->id,
+            'category_id'  => $this->getEssence()->getBasketCategory()->id
+        ])->count();
+
+        if ($count) return $this->isInBasket = true;
+        return $this->isInBasket = false;
+    }
+
+    /**
+     * Method send represent in basket
+     * @return bool
+     */
+    public function sendInBasket()
+    {
+        $middle = new EssenceRepresentToCategory();
+        $middle->represent_id = $this->id;
+        $middle->category_id  = $this->getEssence()->getBasketCategory()->id;
+
+        $this->isInBasket = true;
+        return $middle->save(false);
+    }
+
+    /**
+     * Method restores represent from basket
+     * @return bool|false|int
+     * @throws \Exception
+     * @throws \Throwable
+     */
+    public function restoreFromBasket()
+    {
+        $middle = EssenceRepresentToCategory::find()->where([
+            'represent_id' => $this->id,
+            'category_id'  => $this->getEssence()->getBasketCategory()->id
+        ])->one();
+
+        if ($middle) return $middle->delete();
+        return false;
     }
 
     /**
@@ -258,18 +320,6 @@ class EssencesRepresents extends ActiveRecord implements
     {
         $this->essenceInstance = $essence;
     }
-
-
-    public function getCategory()
-    {
-
-    }
-
-    /*public function getCategories()
-    {
-
-    }
-    */
 
     /**
      * @inheritdoc

@@ -48,8 +48,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
 
-    /** @var EssencesCategories instance of top category  */
-    private $topCategory;
     /** @var EssencesCategories instance of basket category  */
     private $basketCategory;
     /** @var self[] buffer array */
@@ -317,6 +315,15 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
+     * Returns true if for this essence represents can have intermediate categories
+     * @return bool
+     */
+    public function isIntermediateCategories()
+    {
+        return !!$this->is_intermediate_categories;
+    }
+
+    /**
      * Returns true if user can create categories
      * @return bool
      */
@@ -538,43 +545,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
-     * TODO: not needed
-     * Creates top category for this essence
-     * @return bool|EssencesCategories
-     * @throws EssencesException
-     */
-    public function createTopCategory()
-    {
-        if (!$this->id) {
-            Yii::error('Wrong order of creating. Before create top category you must
-            save this essence in db', __METHOD__);
-            throw new EssencesException('Wrong order of creating. Before create top category you must
-            save this essence in db');
-        }
-
-        if (!is_null($this->topCategory)) return $this->topCategory;
-
-        $topCategory = EssencesCategories::find()
-            ->where([
-                'essence_id' => $this->id,
-                'mode'       => EssencesCategories::MODE_TOP,
-            ])
-            ->one();
-
-        if ($topCategory) {
-            $this->topCategory = $topCategory;
-            return true;
-        }
-
-        if (!EssencesCategories::createTopCategory($this)) {
-            Yii::error('Error on saving top category', __METHOD__);
-            throw new EssencesException('Error on saving top category');
-        }
-
-        return true;
-    }
-
-    /**
      * Creates basket category for this essence
      * @return bool|EssencesCategories
      * @throws EssencesException
@@ -602,38 +572,18 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             return true;
         }
 
-        if (!EssencesCategories::createBasketCategory($this)) {
+        $basketCategory = new EssencesCategories();
+        $basketCategory->essence_id = $this->id;
+        $basketCategory->mode       = EssencesCategories::MODE_BASKET;
+
+        if (!$basketCategory->save(false)) {
             Yii::error('Error on saving basket category', __METHOD__);
             throw new EssencesException('Error on saving basket category');
         }
 
+        $this->basketCategory = $basketCategory;
+
         return true;
-    }
-
-    /**
-     * TODO: not needed
-     * Return basket category for this essence
-     * @return bool|EssencesCategories
-     * @throws EssencesException
-     */
-    public function getTopCategory()
-    {
-        if (!is_null($this->topCategory)) return $this->topCategory;
-
-        /** @var EssencesCategories $topCategory */
-        $topCategory = EssencesCategories::find()
-            ->where([
-                'essence_id' => $this->id,
-                //'mode'       => EssencesCategories::MODE_TOP,
-            ])
-            ->one();
-
-        if ($topCategory) {
-            $this->topCategory = $topCategory;
-            return $topCategory;
-        }
-
-        return $this->createTopCategory();
     }
 
     /**
@@ -658,7 +608,9 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             return $basketCategory;
         }
 
-        return $this->createBasketCategory();
+        $this->createBasketCategory();
+
+        return $this->basketCategory;
     }
 
     /**
