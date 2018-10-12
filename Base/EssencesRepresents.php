@@ -69,8 +69,8 @@ class EssencesRepresents extends ActiveRecord implements
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
 
+    /** @var integer for works with categories input */
     public $category;
-
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
     /** @var FilesHandler instance of file handler object */
@@ -187,13 +187,14 @@ class EssencesRepresents extends ActiveRecord implements
     public function validateCategory($attribute, $params)
     {
         if (!$this->hasErrors()) {
-            $this->addError($attribute, 'PENIS');
+            //$this->addError($attribute, 'PENIS');
         }
     }
 
     /**
      * Return array of categories of this represent
-     * @return EssencesCategories[]
+     * @return EssencesCategories[]|null
+     * @throws EssencesException
      */
     public function getCategories()
     {
@@ -224,14 +225,14 @@ class EssencesRepresents extends ActiveRecord implements
 
         foreach ($this->getEssence()->getCategories() as $category) {
             if ($this->scenario == self::SCENARIO_UPDATE && in_array($category->id, EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))) {
-                $list[$category->id] = 'same !!!there for debug only!!!';
+                //$list[$category->id] = 'same !!!there for debug only!!!';
                 continue;
             }
 
             if (!CommonModule::isUnderDev() &&
                 !$this->getEssence()->isIntermediateCategories() &&
                 $category->isChildren())
-                    continue;
+                continue;
 
             $list[$category->id] = $category->getNodeName();
 
@@ -247,54 +248,6 @@ class EssencesRepresents extends ActiveRecord implements
         }
 
         return $list;
-    }
-
-    /**
-     * Returns true if represent in basket
-     * @return bool
-     */
-    public function isInBasket()
-    {
-        if ($this->isInBasket) return $this->isInBasket;
-
-        $count = EssenceRepresentToCategory::find()->where([
-            'represent_id' => $this->id,
-            'category_id'  => $this->getEssence()->getBasketCategory()->id
-        ])->count();
-
-        if ($count) return $this->isInBasket = true;
-        return $this->isInBasket = false;
-    }
-
-    /**
-     * Method send represent in basket
-     * @return bool
-     */
-    public function sendInBasket()
-    {
-        $middle = new EssenceRepresentToCategory();
-        $middle->represent_id = $this->id;
-        $middle->category_id  = $this->getEssence()->getBasketCategory()->id;
-
-        $this->isInBasket = true;
-        return $middle->save(false);
-    }
-
-    /**
-     * Method restores represent from basket
-     * @return bool|false|int
-     * @throws \Exception
-     * @throws \Throwable
-     */
-    public function restoreFromBasket()
-    {
-        $middle = EssenceRepresentToCategory::find()->where([
-            'represent_id' => $this->id,
-            'category_id'  => $this->getEssence()->getBasketCategory()->id
-        ])->one();
-
-        if ($middle) return $middle->delete();
-        return false;
     }
 
     /**
@@ -323,12 +276,53 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      */
     public function save($runValidation = true, $attributeNames = null)
     {
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->represent_order = $this->maxOrder();
             $this->essence_id      = $this->essence->id;
+
+            if (!$this->getEssence()->is_multiple_categories) {
+                $middle = new EssenceRepresentToCategory();
+                $middle->category_id  = $this->category;
+                $middle->represent_id = $this->id;
+                $middle->save('false');
+            }
+        }
+
+        if ($this->scenario == self::SCENARIO_UPDATE) {
+            if (!$this->getEssence()->is_multiple_categories) {
+                $middleArray =
+                    EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
+
+                if (!count($middleArray)) {
+                    $middle = new EssenceRepresentToCategory();
+                    $middle->category_id  = $this->category;
+                    $middle->represent_id = $this->id;
+                    $middle->save('false');
+                } else {
+                    reset($middleArray);
+                    $firstCategoryId = current($middleArray);
+
+                    /** @var EssenceRepresentToCategory $middle */
+                    $middle = EssenceRepresentToCategory::find()->where([
+                        'category_id' => $firstCategoryId,
+                        'represent_id' => $this->id,
+                    ])->one();
+
+                    if ($middle) {
+                        $middle->category_id = $this->category;
+                        $middle->save(false);
+                    } else {
+                        Yii::warning("Can`t fetch middle represent to category", __METHOD__);
+
+                        if (defined('YICMS_STRICT'))
+                            throw new EssencesException("Can`t fetch middle represent to category");
+                    }
+                }
+            }
         }
 
         return parent::save();
@@ -369,6 +363,7 @@ class EssencesRepresents extends ActiveRecord implements
     /**
      * @inheritdoc
      * @return int|string
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFieldTemplateReference()
@@ -385,7 +380,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
-     * @return int|string
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFieldReference()
@@ -411,6 +406,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFileReference()
@@ -484,6 +480,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getImageReference()
@@ -533,6 +530,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getConditionReference()

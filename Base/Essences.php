@@ -48,8 +48,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
 
-    /** @var EssencesCategories instance of basket category  */
-    private $basketCategory;
     /** @var self[] buffer array */
     private static $essencesBuffer = [];
     /** @var bool if true standard fields template for categories will be created on essence create */
@@ -386,6 +384,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns list of categories for categories lists
      * @return array
+     * @throws EssencesException
      */
     public function getListForCategories()
     {
@@ -545,75 +544,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     }
 
     /**
-     * Creates basket category for this essence
-     * @return bool|EssencesCategories
-     * @throws EssencesException
-     */
-    public function createBasketCategory()
-    {
-        if (!$this->id) {
-            Yii::error('Wrong order of creating. Before create basket you must
-            save this essence in db', __METHOD__);
-            throw new EssencesException('Wrong order of creating. Before create basket you must
-            save this essence in db');
-        }
-
-        if (!is_null($this->basketCategory)) return $this->basketCategory;
-
-        $basketCategory = EssencesCategories::find()
-            ->where([
-                'essence_id' => $this->id,
-                'mode'       => EssencesCategories::MODE_BASKET,
-            ])
-            ->one();
-
-        if ($basketCategory) {
-            $this->basketCategory = $basketCategory;
-            return true;
-        }
-
-        $basketCategory = new EssencesCategories();
-        $basketCategory->essence_id = $this->id;
-        $basketCategory->mode       = EssencesCategories::MODE_BASKET;
-
-        if (!$basketCategory->save(false)) {
-            Yii::error('Error on saving basket category', __METHOD__);
-            throw new EssencesException('Error on saving basket category');
-        }
-
-        $this->basketCategory = $basketCategory;
-
-        return true;
-    }
-
-    /**
-     * Return basket category for this essence
-     * @return bool|EssencesCategories
-     * @throws EssencesException
-     */
-    public function getBasketCategory()
-    {
-        if (!is_null($this->basketCategory)) return $this->basketCategory;
-
-        /** @var EssencesCategories $basketCategory */
-        $basketCategory = EssencesCategories::find()
-            ->where([
-                'essence_id' => $this->id,
-                'mode'       => EssencesCategories::MODE_BASKET,
-            ])
-            ->one();
-
-        if ($basketCategory) {
-            $this->basketCategory = $basketCategory;
-            return $basketCategory;
-        }
-
-        $this->createBasketCategory();
-
-        return $this->basketCategory;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getOrderQuery()
@@ -676,7 +606,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         return EssencesCategories::find()->where([
             'essence_id' => $this->id,
-            'mode'       => EssencesCategories::MODE_CASUAL
         ])->all();
     }
 
@@ -688,7 +617,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         return EssencesCategories::find()->where([
             'id'         => $id,
             'essence_id' => $this->id,
-            'mode'       => EssencesCategories::MODE_CASUAL
         ])->one();
     }
 }

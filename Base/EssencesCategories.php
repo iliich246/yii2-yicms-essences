@@ -39,7 +39,6 @@ use Iliich246\YicmsEssences\EssencesModule;
  * @property int $parent_id
  * @property int $editable
  * @property int $visible
- * @property int $mode
  * @property int $category_order
  * @property string $system_route
  * @property string $ruled_route
@@ -70,9 +69,6 @@ class EssencesCategories extends AbstractTreeNode implements
 
     const SCENARIO_CREATE = 0;
     const SCENARIO_UPDATE = 1;
-
-    const MODE_CASUAL = 0;
-    const MODE_BASKET = 1;
 
     /** @var FieldsHandler instance of field handler object */
     private $fieldHandler;
@@ -115,7 +111,7 @@ class EssencesCategories extends AbstractTreeNode implements
                     'essence_id',
                     'parent_id',
                     'editable',
-                    'visible', 'mode',
+                    'visible',
                     'category_order',
                     'created_at',
                     'updated_at'
@@ -230,12 +226,8 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function save($runValidation = true, $attributeNames = null)
     {
-        if ($this->mode == self::MODE_BASKET)
-            return parent::save();
-
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_id     = $this->essence->id;
-            $this->mode           = self::MODE_CASUAL;
             $this->category_order = $this->maxOrder();
         }
 
@@ -291,20 +283,6 @@ class EssencesCategories extends AbstractTreeNode implements
         }
 
         return $list;
-    }
-
-    /**
-     * Creates top category for essence
-     * @param Essences $essence
-     * @return bool
-     */
-    public static function createTopCategory(Essences $essence)
-    {
-        $category = new self();
-        $category->essence_id = $essence->id;
-        $category->mode       = self::MODE_TOP;
-
-        return $category->save();
     }
 
     /**
@@ -559,7 +537,6 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getOrderQuery()
     {
         return self::find()->where([
-            'mode'       => self::MODE_CASUAL,
             'essence_id' => $this->essence_id,
             'parent_id'  => $this->parent_id,
         ]);

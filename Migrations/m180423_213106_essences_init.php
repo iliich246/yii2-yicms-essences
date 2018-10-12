@@ -87,7 +87,6 @@ class m180423_213106_essences_init extends Migration
             'parent_id'           => $this->integer(),
             'editable'            => $this->boolean(),
             'visible'             => $this->boolean(),
-            'mode'                => $this->smallInteger(1),
             'category_order'      => $this->integer(),
             'system_route'        => $this->string(),
             'ruled_route'         => $this->string(),
