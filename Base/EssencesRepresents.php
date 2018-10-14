@@ -2,6 +2,7 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
+use Iliich246\YicmsEssences\EssencesModule;
 use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
@@ -66,8 +67,10 @@ class EssencesRepresents extends ActiveRecord implements
 {
     use SortOrderTrait;
 
-    const SCENARIO_CREATE = 0;
-    const SCENARIO_UPDATE = 1;
+    const SCENARIO_CREATE   = 0;
+    const SCENARIO_UPDATE   = 1;
+    //this scenario needed only for generating field, file ... templates and references
+    const SCENARIO_GENERATE = 2;
 
     /** @var integer for works with categories input */
     public $category;
@@ -85,8 +88,6 @@ class EssencesRepresents extends ActiveRecord implements
     private $isFictive = false;
     /** @var EssencesCategories[]|null buffer of categories for this represent */
     private $categoriesBuffer = null;
-    /** @var null|bool variable keeps represent basket stage  */
-    private $isInBasket = null;
 
     /**
      * @inheritdoc
@@ -135,8 +136,9 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function init()
     {
-        $this->visible = true;
+        $this->visible  = true;
         $this->editable = true;
+
         parent::init();
     }
 
@@ -165,7 +167,8 @@ class EssencesRepresents extends ActiveRecord implements
             self::SCENARIO_UPDATE => [
                 'editable', 'visible','category'
             ],
-            self::SCENARIO_DEFAULT => [],
+            self::SCENARIO_DEFAULT  => [],
+            self::SCENARIO_GENERATE => []
         ];
     }
 
@@ -223,9 +226,14 @@ class EssencesRepresents extends ActiveRecord implements
     {
         $list = [];
 
+        if ($this->scenario != self::SCENARIO_CREATE &&
+            !EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))
+            $list[0] = EssencesModule::t('app', 'No category selected');
+
         foreach ($this->getEssence()->getCategories() as $category) {
-            if ($this->scenario == self::SCENARIO_UPDATE && in_array($category->id, EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))) {
-                //$list[$category->id] = 'same !!!there for debug only!!!';
+            if ($this->scenario == self::SCENARIO_UPDATE &&
+                $this->getEssence()->isMultipleCategories() &&
+                in_array($category->id, EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))) {
                 continue;
             }
 
@@ -274,6 +282,8 @@ class EssencesRepresents extends ActiveRecord implements
         $this->essenceInstance = $essence;
     }
 
+    //public function load()
+
     /**
      * @inheritdoc
      * @throws EssencesException
@@ -284,12 +294,23 @@ class EssencesRepresents extends ActiveRecord implements
             $this->represent_order = $this->maxOrder();
             $this->essence_id      = $this->essence->id;
 
+            if (!parent::save()) {
+                Yii::warning('Can`t save represent',__METHOD__);
+                if (defined('YICMS_STRICT'))
+                    throw new EssencesException("Can`t save represent");
+
+                return false;
+            }
+
             if (!$this->getEssence()->is_multiple_categories) {
+
                 $middle = new EssenceRepresentToCategory();
                 $middle->category_id  = $this->category;
                 $middle->represent_id = $this->id;
                 $middle->save('false');
             }
+
+            return true;
         }
 
         if ($this->scenario == self::SCENARIO_UPDATE) {
@@ -323,9 +344,30 @@ class EssencesRepresents extends ActiveRecord implements
                     }
                 }
             }
+
+            return parent::save();
         }
 
-        return parent::save();
+        if ($this->scenario == self::SCENARIO_GENERATE)
+            return parent::save();
+
+        return false;
+    }
+
+    /**
+     * Associate field category with represents category, used for input fields
+     * @return int
+     */
+    public function loadCategoryField()
+    {
+        $categories = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
+
+        if (!$categories)
+            return $this->category = 0;
+
+        reset($categories);
+
+        return $this->category = current($categories);
     }
 
     /**
@@ -362,7 +404,6 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
-     * @return int|string
      * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
@@ -372,7 +413,11 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (!$essence->field_template_reference_represent) {
             $essence->field_template_reference_represent = FieldTemplate::generateTemplateReference();
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
             $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $essence->field_template_reference_represent;
@@ -387,7 +432,11 @@ class EssencesRepresents extends ActiveRecord implements
     {
         if (!$this->field_reference) {
             $this->field_reference = Field::generateReference();
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
             $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $this->field_reference;
@@ -413,7 +462,11 @@ class EssencesRepresents extends ActiveRecord implements
     {
         if (!$this->file_reference) {
             $this->file_reference = File::generateReference();
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
             $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $this->file_reference;
@@ -421,6 +474,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFileTemplateReference()
@@ -429,7 +483,11 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (!$essence->file_template_reference_represent) {
             $essence->file_template_reference_represent = FilesBlock::generateTemplateReference();
-            $essence->save(false);
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
+            $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $essence->file_template_reference_represent;
@@ -464,6 +522,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getImageTemplateReference()
@@ -472,7 +531,11 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (!$essence->image_template_reference_represent) {
             $essence->image_template_reference_represent = ImagesBlock::generateTemplateReference();
-            $essence->save(false);
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
+            $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $essence->image_template_reference_represent;
@@ -487,7 +550,11 @@ class EssencesRepresents extends ActiveRecord implements
     {
         if (!$this->image_reference) {
             $this->image_reference = Image::generateReference();
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
             $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $this->image_reference;
@@ -514,6 +581,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getConditionTemplateReference()
@@ -522,7 +590,11 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (!$essence->condition_template_reference_represent) {
             $essence->condition_template_reference_represent = ConditionTemplate::generateTemplateReference();
-            $essence->save(false);
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
+            $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $essence->condition_template_reference_represent;
@@ -537,7 +609,11 @@ class EssencesRepresents extends ActiveRecord implements
     {
         if (!$this->condition_reference) {
             $this->condition_reference = Condition::generateReference();
+
+            $oldScenario = $this->scenario;
+            $this->scenario = self::SCENARIO_GENERATE;
             $this->save(false);
+            $this->scenario = $oldScenario;
         }
 
         return $this->condition_reference;
