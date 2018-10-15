@@ -203,6 +203,8 @@ class EssencesRepresents extends ActiveRecord implements
     {
         if (!is_null($this->categoriesBuffer)) return $this->categoriesBuffer;
 
+        $this->categoriesBuffer = [];
+
         foreach(EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id) as $categoryId) {
             $category = $this->getEssence()->getCategoryById($categoryId);
 
