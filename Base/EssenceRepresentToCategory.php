@@ -53,4 +53,14 @@ class EssenceRepresentToCategory extends ActiveRecord
 
         return self::$representBuffer[$representId] = $result;
     }
+
+    /**
+     * Clear represents buffer for current represent id
+     * @param $representId
+     */
+    public static function clearBufferForRepresent($representId)
+    {
+        if (isset(self::$representBuffer[$representId]))
+            unset(self::$representBuffer[$representId]);
+    }
 }

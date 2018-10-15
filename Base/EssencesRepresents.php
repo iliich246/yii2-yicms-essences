@@ -2,7 +2,6 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
-use Iliich246\YicmsEssences\EssencesModule;
 use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
@@ -30,6 +29,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
 use Iliich246\YicmsCommon\Conditions\ConditionsHandler;
 use Iliich246\YicmsCommon\Conditions\ConditionsInterface;
 use Iliich246\YicmsCommon\Conditions\ConditionsReferenceInterface;
+use Iliich246\YicmsEssences\EssencesModule;
 
 /**
  * Class AbstractTreeNode
@@ -258,6 +258,73 @@ class EssencesRepresents extends ActiveRecord implements
         }
 
         return $list;
+    }
+
+    /**
+     * Add category to represent
+     * @param EssencesCategories $category
+     * @return bool
+     * @throws EssencesException
+     */
+    public function addCategory(EssencesCategories $category)
+    {
+        if (!CommonModule::isUnderDev() && !$this->editable) return false;
+
+        $categoriesArray = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
+
+        if (!$this->getEssence()->isMultipleCategories() && count($categoriesArray) > 0) return false;
+
+        if ($this->getEssence()->max_categories != 0 && $this->getEssence()->max_categories >= count($categoriesArray))
+            return false;
+
+        if ($this->getEssence()->id != $category->getEssence()->id) return false;
+
+        if (in_array($category->id, $categoriesArray)) return false;
+
+        $middle = new EssenceRepresentToCategory();
+        $middle->category_id  = $category->id;
+        $middle->represent_id = $this->id;
+
+        if ($middle->save(false)) {
+            EssenceRepresentToCategory::clearBufferForRepresent($this->id);
+            $this->categoriesBuffer = null;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Deletes category from represent
+     * @param EssencesCategories $category
+     * @return bool
+     * @throws EssencesException
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deleteCategory(EssencesCategories $category)
+    {
+        if (!CommonModule::isUnderDev() && !$this->editable) return false;
+
+        if ($this->getEssence()->id != $category->getEssence()->id) return false;
+
+        $categoriesArray = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
+
+        if (!in_array($category->id, $categoriesArray)) return false;
+
+        $middle = EssenceRepresentToCategory::find()->where([
+            'category_id'  => $category->id,
+            'represent_id' => $this->id,
+        ])->one();
+
+        if ($middle->delete()) {
+            EssenceRepresentToCategory::clearBufferForRepresent($this->id);
+            $this->categoriesBuffer = null;
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
