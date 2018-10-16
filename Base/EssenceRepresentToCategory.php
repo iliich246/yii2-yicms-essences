@@ -63,4 +63,36 @@ class EssenceRepresentToCategory extends ActiveRecord
         if (isset(self::$representBuffer[$representId]))
             unset(self::$representBuffer[$representId]);
     }
+
+    /**
+     * Return array of represents id for category id
+     * @param $categoryId
+     * @return array
+     */
+    public static function getRepresentsArrayForCategory($categoryId)
+    {
+        if (isset(self::$categoriesBuffer[$categoryId]))
+            return self::$categoriesBuffer[$categoryId];
+
+        $representsReps = self::find()->where([
+            'category_id' => $categoryId
+        ])->asArray()->all();
+
+        $result = [];
+
+        foreach ($representsReps as $rr)
+            $result[] = $rr['represent_id'];
+
+        return self::$categoriesBuffer[$categoryId] = $result;
+    }
+
+    /**
+     * Clear represents buffer for current category id
+     * @param $categoryId
+     */
+    public static function clearBufferForCategory($categoryId)
+    {
+        if (isset(self::$categoriesBuffer[$categoryId]))
+            unset(self::$categoriesBuffer[$categoryId]);
+    }
 }

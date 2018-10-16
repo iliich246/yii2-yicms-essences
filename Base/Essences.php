@@ -3,6 +3,7 @@
 namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
@@ -58,6 +59,10 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     public $createCategoriesSeoFields      = false;
     /** @var bool if true seo fields template for represents will be created on essence create */
     public $createRepresentSeoFields       = false;
+    /** @var EssencesRepresents[] buffer*/
+    private $representsBuffer = [];
+    /** @var bool when true all represents was fetched from db */
+    private $isAllRepresentsFetched = false;
 
     /**
      * @inheritdoc
@@ -245,11 +250,118 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns category by id
      * @param $id
-     * @return AbstractTreeNode|null
+     * @return EssencesCategories
      */
     public function getCategoryById($id)
     {
         return $this->getNodeById($id);
+    }
+
+    /**
+     * Returns represent by id
+     * @param $id
+     * @return EssencesRepresents|null|static
+     */
+    public function getRepresentById($id)
+    {
+        if (isset($this->representsBuffer[$id]))
+            return $this->representsBuffer[$id];
+
+        return $this->representsBuffer[$id] = EssencesRepresents::findOne($id);
+    }
+
+    /**
+     * Return all represents for this essence
+     * @return EssencesRepresents[]
+     */
+    public function getAllRepresents()
+    {
+        if ($this->isAllRepresentsFetched)
+            return $this->representsBuffer;
+
+        $this->isAllRepresentsFetched = true;
+
+        return $this->representsBuffer = EssencesRepresents::find()->where([
+            'essence_id' => $this->id
+        ])->orderBy(['represent_order' => SORT_ASC])
+          ->indexBy('id')
+          ->all();
+    }
+
+    /**
+     * Returns ActiveQuery for find all represents for this essence
+     * @return ActiveQuery
+     */
+    public function getAllRepresentsQuery()
+    {
+        return EssencesRepresents::find()->where([
+            'essence_id' => $this->id
+        ]);
+    }
+
+    /**
+     * Creates list of categories for filter represents drop list
+     * @return array
+     */
+    public function getCategoriesForDropList()
+    {
+        $list = [];
+
+        $list[0] = EssencesModule::t('app', 'All represents');
+
+        if ($this->isRepresentsWithoutCategories())
+            $list[-1] = EssencesModule::t('app', 'Represents without categories');
+
+        /** @var EssencesCategories $node */
+        foreach($this->traversalByTreeOrder() as $node) {
+            if ($node->countRepresents() == 0) continue;
+
+            $list[$node->id] = $node->getNodeName();
+        }
+
+        return $list;
+    }
+
+    /**
+     * Return true if essence consist represents without assigned categories
+     * @return bool
+     */
+    public function isRepresentsWithoutCategories()
+    {
+        foreach($this->getAllRepresents() as $represent)
+            if ($represent->countCategories() == 0) return true;
+
+        return false;
+    }
+
+    /**
+     * Returns array of represents without assigned categories for this essence
+     * @return EssencesRepresents[]
+     */
+    public function getRepresentsWithoutCategories()
+    {
+        $result = [];
+
+        foreach($this->getAllRepresents() as $represent)
+            if ($represent->countCategories() == 0) $result[$represent->id] = $represent;
+
+        return $result;
+    }
+
+    /**
+     * Return query for find all represents without category for this essence
+     * @return ActiveQuery
+     */
+    public function getRepresentsWithoutCategoriesQuery()
+    {
+        $ids = [];
+
+        foreach($this->getAllRepresents() as $represent)
+            if ($represent->countCategories() == 0) $ids = $represent->id;
+
+        return EssencesRepresents::find()->where([
+            'in', 'id', $ids
+        ]);
     }
 
     /**
@@ -265,12 +377,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
         if (!$this->save(false))
             throw new EssencesException('Can not create essence '. $this->program_name);
-
-        if (!$this->createBasketCategory())
-            throw new EssencesException('Can not create basket category for '. $this->program_name);
-
-        if (!$this->createTopCategory())
-            throw new EssencesException('Can not create top category for '. $this->program_name);
 
         return true;
     }

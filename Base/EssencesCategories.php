@@ -30,6 +30,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionsHandler;
 use Iliich246\YicmsCommon\Conditions\ConditionsInterface;
 use Iliich246\YicmsCommon\Conditions\ConditionsReferenceInterface;
 use Iliich246\YicmsEssences\EssencesModule;
+use yii\db\ActiveQuery;
 
 /**
  * Class EssencesCategories
@@ -331,8 +332,31 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getRepresents()
     {
-        return $this->hasMany(EssencesRepresents::class, ['id' => 'represent_id'])
-                ->viaTable('{{%essences_category_represent}}', ['category_id' => 'id']);
+        $result = [];
+
+
+
+    }
+
+    /**
+     * Return ActiveQuery for find all represents for this category
+     * @return ActiveQuery
+     */
+    public function getRepresentsQuery()
+    {
+        return EssencesRepresents::find()->where([
+            'in', 'id', EssenceRepresentToCategory::getRepresentsArrayForCategory($this->id)
+        ])->orderBy(['represent_order' => SORT_ASC]);
+
+    }
+
+    /**
+     * Returns count of represents in this category
+     * @return int
+     */
+    public function countRepresents()
+    {
+        return count(EssenceRepresentToCategory::getRepresentsArrayForCategory($this->id));
     }
 
     /**

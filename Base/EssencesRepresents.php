@@ -215,6 +215,17 @@ class EssencesRepresents extends ActiveRecord implements
         return $this->categoriesBuffer;
     }
 
+    /**
+     * Return count of categories associated with this represent
+     * @return int
+     */
+    public function countCategories()
+    {
+        if (!is_null($this->categoriesBuffer)) return count($this->categoriesBuffer);
+
+        return count($this->getCategories());
+    }
+
 //    public function getCategory()
 //    {
 //        //if (!is_null($this->categoriesBuffer)) return first($this->categoriesBuffer);
