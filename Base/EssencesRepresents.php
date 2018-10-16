@@ -218,6 +218,7 @@ class EssencesRepresents extends ActiveRecord implements
     /**
      * Return count of categories associated with this represent
      * @return int
+     * @throws EssencesException
      */
     public function countCategories()
     {
@@ -362,6 +363,31 @@ class EssencesRepresents extends ActiveRecord implements
         $this->essenceInstance = $essence;
     }
 
+    /**
+     * Returns name of represent for lists
+     * @return string
+     * @throws EssencesException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function name()
+    {
+        $nameFormFieldId = $this->getEssence()->represent_form_name_field;
+
+        if (!$nameFormFieldId) {
+            return $this->id;
+        }
+
+        /** @var FieldTemplate $fieldTemplate */
+        $fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId);
+
+        if (!$fieldTemplate) {
+            //TODO: error message
+            return $this->id;
+        }
+
+        return (string)$this->getField($fieldTemplate->program_name);
+    }
+
     //public function load()
 
     /**
@@ -465,6 +491,7 @@ class EssencesRepresents extends ActiveRecord implements
      * @inheritdoc
      * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
+     * @throws \Exception
      */
     public function getField($name)
     {

@@ -250,7 +250,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Returns category by id
      * @param $id
-     * @return EssencesCategories
+     * @return EssencesCategories|AbstractTreeNode
      */
     public function getCategoryById($id)
     {
@@ -302,6 +302,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Creates list of categories for filter represents drop list
      * @return array
+     * @throws EssencesException
      */
     public function getCategoriesForDropList()
     {
@@ -325,6 +326,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Return true if essence consist represents without assigned categories
      * @return bool
+     * @throws EssencesException
      */
     public function isRepresentsWithoutCategories()
     {
@@ -336,7 +338,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
 
     /**
      * Returns array of represents without assigned categories for this essence
-     * @return EssencesRepresents[]
+     * @return array
+     * @throws EssencesException
      */
     public function getRepresentsWithoutCategories()
     {
@@ -351,6 +354,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     /**
      * Return query for find all represents without category for this essence
      * @return ActiveQuery
+     * @throws EssencesException
      */
     public function getRepresentsWithoutCategoriesQuery()
     {
@@ -511,22 +515,6 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         }
 
         return $list;
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getEssencesCategories()
-    {
-        return $this->hasMany(EssencesCategories::className(), ['essence_id' => 'id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getEssencesNamesTranslates()
-    {
-        return $this->hasMany(EssencesNamesTranslatesDb::className(), ['essence_id' => 'id']);
     }
 
     /**

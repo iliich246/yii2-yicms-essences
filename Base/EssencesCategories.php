@@ -79,6 +79,8 @@ class EssencesCategories extends AbstractTreeNode implements
     private $imageHandler;
     /** @var ConditionsHandler instance of condition handler object */
     private $conditionHandler;
+    /** @var bool keeps state of fictive value */
+    private $isFictive = false;
 
     /**
      * @inheritdoc
@@ -96,8 +98,9 @@ class EssencesCategories extends AbstractTreeNode implements
         parent::init();
 
         if ($this->isNewRecord) {
-            $this->visible  = true;
-            $this->editable = true;
+            $this->visible   = true;
+            $this->editable  = true;
+            $this->parent_id = 0;
         }
     }
 
@@ -129,12 +132,6 @@ class EssencesCategories extends AbstractTreeNode implements
                 ],
                 'string',
                 'max' => 255
-            ], [
-                ['essence_id'],
-                'exist',
-                'skipOnError' => true,
-                'targetClass' => Essences::className(),
-                'targetAttribute' => ['essence_id' => 'id']
             ],
             [
                 'parent_id', 'validateParent'
@@ -192,18 +189,18 @@ class EssencesCategories extends AbstractTreeNode implements
     public function validateParent($attribute, $params)
     {
         if (!$this->hasErrors()) {
-            if (!CommonModule::isUnderDev() &&
-                ($this->getEssence()->count_subcategories > 0) &&
-                ($this->getLevel() > $this->getEssence()->count_subcategories - 2)) {
-
-                $this->addError($attribute, EssencesModule::t('app', 'Wrong parent category'));
-            }
+//            if (!CommonModule::isUnderDev() &&
+//                ($this->getEssence()->count_subcategories > 0) &&
+//                ($this->getLevel() > $this->getEssence()->count_subcategories - 2)) {
+//
+//                $this->addError($attribute, EssencesModule::t('app', 'Wrong parent category'));
+//            }
         }
     }
 
     /**
      * Essence getter
-     * @return Essences|null
+     * @return Essences|AbstractTreeNodeCollection|null
      * @throws EssencesException
      */
     public function getEssence()
@@ -301,6 +298,8 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function name()
     {
+        return 'dump';
+
         $nameFormFieldId = $this->getEssence()->category_form_name_field;
 
         if (!$nameFormFieldId) {
@@ -334,6 +333,10 @@ class EssencesCategories extends AbstractTreeNode implements
     {
         $result = [];
 
+        foreach (EssenceRepresentToCategory::getRepresentsArrayForCategory($this->id) as $rid) {
+
+        }
+
 
 
     }
@@ -347,7 +350,6 @@ class EssencesCategories extends AbstractTreeNode implements
         return EssencesRepresents::find()->where([
             'in', 'id', EssenceRepresentToCategory::getRepresentsArrayForCategory($this->id)
         ])->orderBy(['represent_order' => SORT_ASC]);
-
     }
 
     /**
@@ -372,19 +374,30 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
     public function getField($name)
     {
+        if ($this->isFictive()) {
+            $fictiveField = new Field();
+            $fictiveField->setFictive();
+
+            /** @var FieldTemplate $template */
+            $template = FieldTemplate::getInstance($this->getEssence()->getCategoryFieldTemplateReference(), $name);
+            $fictiveField->setTemplate($template);
+        }
+
         return $this->getFieldHandler()->getField($name);
     }
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFieldTemplateReference()
     {
-        $essence = $this->essence;
+        $essence = $this->getEssence();
 
         if (!$essence->field_template_reference_category) {
             $essence->field_template_reference_category = FieldTemplate::generateTemplateReference();
@@ -435,11 +448,12 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getFileTemplateReference()
     {
-        $essence = $this->essence;
+        $essence = $this->getEssence();
 
         if (!$essence->file_template_reference_category) {
             $essence->file_template_reference_category = FilesBlock::generateTemplateReference();
@@ -478,11 +492,12 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getImageTemplateReference()
     {
-        $essence = $this->essence;
+        $essence = $this->getEssence();
 
         if (!$essence->image_template_reference_category) {
             $essence->image_template_reference_category = ImagesBlock::generateTemplateReference();
@@ -527,11 +542,12 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function getConditionTemplateReference()
     {
-        $essence = $this->essence;
+        $essence = $this->getEssence();
 
         if (!$essence->condition_template_reference_category) {
             $essence->condition_template_reference_category = ConditionTemplate::generateTemplateReference();
@@ -619,7 +635,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function setFictive()
     {
-        return false;
+        $this->isFictive = true;
     }
 
     /**
@@ -627,7 +643,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function clearFictive()
     {
-        return false;
+        $this->isFictive = false;
     }
 
     /**
@@ -635,6 +651,6 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function isFictive()
     {
-        return false;
+        return $this->isFictive;
     }
 }
