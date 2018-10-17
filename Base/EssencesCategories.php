@@ -295,11 +295,10 @@ class EssencesCategories extends AbstractTreeNode implements
      * Returns name of category via name forming field
      * @return string
      * @throws EssencesException
+     * @throws \Exception
      */
     public function name()
     {
-        return 'dump';
-
         $nameFormFieldId = $this->getEssence()->category_form_name_field;
 
         if (!$nameFormFieldId) {
