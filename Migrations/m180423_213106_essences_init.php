@@ -135,9 +135,10 @@ class m180423_213106_essences_init extends Migration
          * essences_category_represent table
          */
         $this->createTable('{{%essences_category_represent}}', [
-            'id'           => $this->primaryKey(),
-            'category_id'  => $this->integer(),
-            'represent_id' => $this->integer(),
+            'id'              => $this->primaryKey(),
+            'category_id'     => $this->integer(),
+            'represent_id'    => $this->integer(),
+            'represent_order' => $this->integer(),
         ]);
 
         $this->addForeignKey('essences_category_represent-to-essences_categories',

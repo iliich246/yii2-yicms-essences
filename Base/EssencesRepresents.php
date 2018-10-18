@@ -293,9 +293,13 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (in_array($category->id, $categoriesArray)) return false;
 
+
+
         $middle = new EssenceRepresentToCategory();
         $middle->category_id  = $category->id;
         $middle->represent_id = $this->id;
+        $middle->represent_order =
+            EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id , $category->id);
 
         if ($middle->save(false)) {
             EssenceRepresentToCategory::clearBufferForRepresent($this->id);
@@ -411,8 +415,11 @@ class EssencesRepresents extends ActiveRecord implements
             if (!$this->getEssence()->is_multiple_categories) {
 
                 $middle = new EssenceRepresentToCategory();
-                $middle->category_id  = $this->category;
-                $middle->represent_id = $this->id;
+                $middle->category_id     = $this->category;
+                $middle->represent_id    = $this->id;
+                $middle->represent_order =
+                    EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id ,$this->category);
+
                 $middle->save('false');
             }
 
@@ -428,6 +435,9 @@ class EssencesRepresents extends ActiveRecord implements
                     $middle = new EssenceRepresentToCategory();
                     $middle->category_id  = $this->category;
                     $middle->represent_id = $this->id;
+                    $middle->represent_order =
+                        EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id ,$this->category);
+
                     $middle->save('false');
                 } else {
                     reset($middleArray);
@@ -435,13 +445,19 @@ class EssencesRepresents extends ActiveRecord implements
 
                     /** @var EssenceRepresentToCategory $middle */
                     $middle = EssenceRepresentToCategory::find()->where([
-                        'category_id' => $firstCategoryId,
+                        'category_id'  => $firstCategoryId,
                         'represent_id' => $this->id,
                     ])->one();
 
                     if ($middle) {
-                        $middle->category_id = $this->category;
-                        $middle->save(false);
+                        if ($middle->category_id != $this->category) {
+                            $middle->category_id = $this->category;
+                            $middle->represent_order =
+                                EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id ,$this->category);
+
+                            $middle->save(false);
+                        }
+
                     } else {
                         Yii::warning("Can`t fetch middle represent to category", __METHOD__);
 
@@ -725,6 +741,51 @@ class EssencesRepresents extends ActiveRecord implements
 
         return $this->condition_reference;
     }
+
+    /**
+     * Up represent order in category group
+     * @param $categoryId
+     * @return bool
+     */
+    public function upInCategory($categoryId)
+    {
+        return EssenceRepresentToCategory::upRepresentOrderInCategory($this->id, $categoryId);
+    }
+
+    /**
+     * Down represent order in category group
+     * @param $categoryId
+     * @return bool
+     */
+    public function downInCategory($categoryId)
+    {
+        return EssenceRepresentToCategory::downRepresentOrderInCategory($this->id, $categoryId);
+    }
+
+    /**
+     * Returns true if represent can up his order in category group
+     * @param $categoryId
+     * @return bool
+     */
+    public function canUpInCategory($categoryId)
+    {
+        return EssenceRepresentToCategory::canUpRepresentOrderInCategory($this->id, $categoryId);
+    }
+
+    /**
+     * Returns true if represent can down his order in category group
+     * @param $categoryId
+     * @return bool
+     */
+    public function canDownInCategory($categoryId)
+    {
+        return EssenceRepresentToCategory::canDownRepresentOrderInCategory($this->id, $categoryId);
+    }
+
+//    public function maxOrderInCategory($categoryId)
+//    {
+//        return EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id, $categoryId);
+//    }
 
     /**
      * @inheritdoc
