@@ -29,6 +29,7 @@ use Iliich246\YicmsEssences\EssencesModule;
  * @property bool $visible
  * @property int $category_form_name_field
  * @property int $represent_form_name_field
+ * @property int $represents_pagination_count
  * @property string $field_template_reference_category
  * @property string $file_template_reference_category
  * @property string $image_template_reference_category
@@ -77,14 +78,15 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
      */
     public function init()
     {
-        $this->visible                    = true;
-        $this->editable                   = true;
-        $this->is_categories              = true;
-        $this->categories_create_by_user  = true;
-        $this->count_subcategories        = 0;
-        $this->is_multiple_categories     = false;
-        $this->is_intermediate_categories = false;
-        $this->max_categories             = 0;
+        $this->visible                     = true;
+        $this->editable                    = true;
+        $this->is_categories               = true;
+        $this->categories_create_by_user   = true;
+        $this->count_subcategories         = 0;
+        $this->is_multiple_categories      = false;
+        $this->is_intermediate_categories  = false;
+        $this->max_categories              = 0;
+        $this->represents_pagination_count = 50;
 
         parent::init();
     }
@@ -102,6 +104,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             [['editable', 'visible', 'is_multiple_categories', 'is_intermediate_categories', 'categories_create_by_user'], 'boolean'],
             ['category_form_name_field', 'integer'],
             ['represent_form_name_field', 'integer'],
+            ['represents_pagination_count', 'integer'],
         ];
     }
 
@@ -114,12 +117,14 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             self::SCENARIO_CREATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
                 'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
-                'is_intermediate_categories', 'max_categories', 'categories_create_by_user'
+                'is_intermediate_categories', 'max_categories', 'categories_create_by_user',
+                'represents_pagination_count'
             ],
             self::SCENARIO_UPDATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
                 'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
-                'is_intermediate_categories', 'max_categories', 'categories_create_by_user'
+                'is_intermediate_categories', 'max_categories', 'categories_create_by_user',
+                'represents_pagination_count',
             ],
         ];
     }

@@ -31,6 +31,7 @@ use Iliich246\YicmsCommon\Conditions\ConditionsInterface;
 use Iliich246\YicmsCommon\Conditions\ConditionsReferenceInterface;
 use Iliich246\YicmsEssences\EssencesModule;
 use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * Class EssencesCategories
@@ -340,7 +341,7 @@ class EssencesCategories extends AbstractTreeNode implements
     /**
      * Return ActiveQuery for find all represents for this category
      * @param int $sort
-     * @return $this
+     * @return ActiveQuery
      */
     public function getRepresentsQuery($sort = SORT_ASC)
     {

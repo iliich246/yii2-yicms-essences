@@ -293,8 +293,6 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (in_array($category->id, $categoriesArray)) return false;
 
-
-
         $middle = new EssenceRepresentToCategory();
         $middle->category_id  = $category->id;
         $middle->represent_id = $this->id;
@@ -474,6 +472,78 @@ class EssencesRepresents extends ActiveRecord implements
             return parent::save();
 
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws EssencesException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function delete()
+    {
+        /** @var FieldTemplate $fieldTemplates */
+        $fieldTemplates = FieldTemplate::find()->where([
+            'field_template_reference' => $this->getEssence()->getRepresentFieldTemplateReference(),
+        ])->all();
+
+        foreach($fieldTemplates as $fieldTemplate) {
+            /** @var Field $field */
+            $field = Field::find()->where([
+                'common_fields_template_id' => $fieldTemplate->id,
+                'field_reference'           => $this->field_reference,
+            ])->one();
+
+            if ($field) $field->delete();
+        }
+
+        /** @var ConditionTemplate $conditionTemplates */
+        $conditionTemplates = ConditionTemplate::find()->where([
+            'condition_template_reference' => $this->getEssence()->getRepresentConditionTemplateReference(),
+        ])->all();
+
+        foreach($conditionTemplates as $conditionTemplate) {
+            /** @var Condition $condition */
+            $condition = Condition::find()->where([
+                'common_condition_template_id' => $conditionTemplate->id,
+                'condition_reference'          => $this->condition_reference
+            ])->one();
+
+            if ($condition) $condition->delete();
+        }
+
+        /** @var FilesBlock $fileBlocks */
+        $fileBlocks = FilesBlock::find()->where([
+            'file_template_reference' => $this->getEssence()->getRepresentFileTemplateReference()
+        ])->all();
+
+        foreach($fileBlocks as $fileBlock) {
+            /** @var File $file */
+            $file = File::find()->where([
+                'common_files_template_id' => $fileBlock->id,
+                'file_reference'           => $this->file_reference
+            ])->one();
+
+            if ($file) $file->delete();
+        }
+
+        /** @var ImagesBlock $imagesBlock */
+        $imagesBlocks = ImagesBlock::find()->where([
+            'image_template_reference' => $this->getEssence()->getRepresentImageTemplateReference()
+        ])->all();
+
+        foreach($imagesBlock as $imageBlock) {
+            /** @var Image $image */
+            $image = Image::find()->where([
+                'common_images_templates_id' => $imageBlock->id,
+                'image_reference'            => $this->image_reference
+            ])->one();
+
+            if ($image) $image->delete();
+        }
+        
+        return parent::delete();
     }
 
     /**
