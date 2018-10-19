@@ -335,20 +335,19 @@ class EssencesCategories extends AbstractTreeNode implements
         foreach (EssenceRepresentToCategory::getRepresentsArrayForCategory($this->id) as $rid) {
 
         }
-
-
-
     }
 
     /**
      * Return ActiveQuery for find all represents for this category
-     * @return ActiveQuery
+     * @param int $sort
+     * @return $this
      */
-    public function getRepresentsQuery()
+    public function getRepresentsQuery($sort = SORT_ASC)
     {
-        return EssencesRepresents::find()->where([
-            'in', 'id', EssenceRepresentToCategory::getRepresentsArrayForCategory($this->id)
-        ])->orderBy(['represent_order' => SORT_ASC]);
+        return  EssencesRepresents::find()
+            ->leftJoin('{{%essences_category_represent}}', '{{%essences_category_represent}}.`represent_id` = {{%essences_represents}}.`id`')
+            ->where(['{{%essences_category_represent}}.category_id' => $this->id])
+            ->orderBy(['{{%essences_category_represent}}.represent_order' => $sort]);
     }
 
     /**
