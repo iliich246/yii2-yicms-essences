@@ -483,7 +483,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function delete()
     {
-        /** @var FieldTemplate $fieldTemplates */
+        /** @var FieldTemplate[] $fieldTemplates */
         $fieldTemplates = FieldTemplate::find()->where([
             'field_template_reference' => $this->getEssence()->getRepresentFieldTemplateReference(),
         ])->all();
@@ -498,7 +498,7 @@ class EssencesRepresents extends ActiveRecord implements
             if ($field) $field->delete();
         }
 
-        /** @var ConditionTemplate $conditionTemplates */
+        /** @var ConditionTemplate[] $conditionTemplates */
         $conditionTemplates = ConditionTemplate::find()->where([
             'condition_template_reference' => $this->getEssence()->getRepresentConditionTemplateReference(),
         ])->all();
@@ -513,7 +513,7 @@ class EssencesRepresents extends ActiveRecord implements
             if ($condition) $condition->delete();
         }
 
-        /** @var FilesBlock $fileBlocks */
+        /** @var FilesBlock[] $fileBlocks */
         $fileBlocks = FilesBlock::find()->where([
             'file_template_reference' => $this->getEssence()->getRepresentFileTemplateReference()
         ])->all();
@@ -528,12 +528,12 @@ class EssencesRepresents extends ActiveRecord implements
             if ($file) $file->delete();
         }
 
-        /** @var ImagesBlock $imagesBlock */
+        /** @var ImagesBlock[] $imagesBlocks */
         $imagesBlocks = ImagesBlock::find()->where([
             'image_template_reference' => $this->getEssence()->getRepresentImageTemplateReference()
         ])->all();
 
-        foreach($imagesBlock as $imageBlock) {
+        foreach($imagesBlocks as $imageBlock) {
             /** @var Image $image */
             $image = Image::find()->where([
                 'common_images_templates_id' => $imageBlock->id,
@@ -542,7 +542,15 @@ class EssencesRepresents extends ActiveRecord implements
 
             if ($image) $image->delete();
         }
-        
+
+        /** @var EssenceRepresentToCategory[] $representToCategories */
+        $representToCategories = EssenceRepresentToCategory::find()->where([
+            'represent_id' => $this->id,
+        ])->all();
+
+        foreach ($representToCategories as $representCategory)
+            $representCategory->delete();
+
         return parent::delete();
     }
 
