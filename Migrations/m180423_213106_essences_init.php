@@ -33,6 +33,8 @@ class m180423_213106_essences_init extends Migration
             'category_form_name_field'               => $this->integer(),
             'represent_form_name_field'              => $this->integer(),
             'represents_pagination_count'            => $this->integer(),
+            'delete_subcategories'                   => $this->boolean(),
+            'delete_represents'                      => $this->boolean(),
             'field_template_reference_category'      => $this->string(),
             'file_template_reference_category'       => $this->string(),
             'image_template_reference_category'      => $this->string(),

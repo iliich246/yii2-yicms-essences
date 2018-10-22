@@ -82,6 +82,8 @@ class EssencesCategories extends AbstractTreeNode implements
     private $conditionHandler;
     /** @var bool keeps state of fictive value */
     private $isFictive = false;
+    /** @var bool needed for delete sequence. Used for subcategories mark */
+    private $markedAsSubcategory = false;
 
     /**
      * @inheritdoc
@@ -289,7 +291,36 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function delete()
     {
-        return parent::delete();
+        if ($this->isChildren()) {
+            foreach ($this->getChildren() as $children) {
+
+                /** @var EssencesCategories $subCategory */
+                $subCategory = $children['node'];
+                $subCategory->markedAsSubcategory = true;
+                $subCategory->delete();
+            }
+        }
+
+        foreach ($this->getRepresents() as $represent) {
+
+            $represent->deleteCategory($this);
+
+            if (!$represent->countCategories()) continue;
+
+            if ($this->getEssence()->delete_represents)
+                $represent->delete();
+        }
+
+        if (!$this->markedAsSubcategory) return parent::delete();
+
+        if ($this->getEssence()->delete_subcategories)
+            return parent::delete();
+
+        $this->visible   = false;
+        $this->parent_id = 0;
+        $this->category_order = $this->maxOrder();
+
+        return $this->save(false);
     }
 
     /**
@@ -327,15 +358,11 @@ class EssencesCategories extends AbstractTreeNode implements
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return EssencesRepresents[]
      */
     public function getRepresents()
     {
-        $result = [];
-
-        foreach (EssenceRepresentToCategory::getRepresentsArrayForCategory($this->id) as $rid) {
-
-        }
+        return $this->getRepresentsQuery()->all();
     }
 
     /**

@@ -215,6 +215,18 @@ $this->registerJs($js, $this::POS_READY);
 
             <div class="row">
                 <div class="col-xs-12">
+                    <?= $form->field($essence, 'delete_subcategories')->checkbox() ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <?= $form->field($essence, 'delete_represents')->checkbox() ?>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
                     <?= $form->field($essence, 'editable')->checkbox() ?>
                 </div>
             </div>

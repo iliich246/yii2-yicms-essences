@@ -30,6 +30,8 @@ use Iliich246\YicmsEssences\EssencesModule;
  * @property int $category_form_name_field
  * @property int $represent_form_name_field
  * @property int $represents_pagination_count
+ * @property bool $delete_subcategories
+ * @property bool $delete_represents
  * @property string $field_template_reference_category
  * @property string $file_template_reference_category
  * @property string $image_template_reference_category
@@ -87,6 +89,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
         $this->is_intermediate_categories  = false;
         $this->max_categories              = 0;
         $this->represents_pagination_count = 50;
+        $this->delete_subcategories        = true;
+        $this->delete_represents           = false;
 
         parent::init();
     }
@@ -97,14 +101,40 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     public function rules()
     {
         return [
-            ['program_name', 'required', 'message' => 'Obligatory input field'],
-            ['program_name', 'string', 'max' => '50', 'tooLong' => 'Program name must be less than 50 symbols'],
-            ['program_name', 'validateProgramName'],
-            [['is_categories', 'count_subcategories', 'essence_order', 'max_categories'], 'integer'],
-            [['editable', 'visible', 'is_multiple_categories', 'is_intermediate_categories', 'categories_create_by_user'], 'boolean'],
-            ['category_form_name_field', 'integer'],
-            ['represent_form_name_field', 'integer'],
-            ['represents_pagination_count', 'integer'],
+            [
+                'program_name', 'required', 'message' => 'Obligatory input field'
+            ],
+            [
+                'program_name', 'string', 'max' => '50', 'tooLong' => 'Program name must be less than 50 symbols'
+            ],
+            [
+                'program_name', 'validateProgramName'
+            ],
+            [
+                ['is_categories', 'count_subcategories', 'essence_order', 'max_categories'],
+                'integer'
+            ],
+            [
+                [
+                    'editable',
+                    'visible',
+                    'is_multiple_categories',
+                    'is_intermediate_categories',
+                    'categories_create_by_user',
+                    'delete_subcategories',
+                    'delete_represents',
+                ],
+                'boolean'
+            ],
+            [
+                [
+                    'category_form_name_field',
+                    'represent_form_name_field',
+                    'represents_pagination_count'
+                ],
+                'integer'
+            ],
+
         ];
     }
 
@@ -118,13 +148,13 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
                 'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
                 'is_intermediate_categories', 'max_categories', 'categories_create_by_user',
-                'represents_pagination_count'
+                'represents_pagination_count', 'delete_subcategories', 'delete_represents'
             ],
             self::SCENARIO_UPDATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
                 'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
                 'is_intermediate_categories', 'max_categories', 'categories_create_by_user',
-                'represents_pagination_count',
+                'represents_pagination_count', 'delete_subcategories', 'delete_represents'
             ],
         ];
     }
@@ -144,7 +174,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             'max_categories'             => 'Max count of multiple categories (0 - infinity)',
             'category_form_name_field'   => 'Name forming field for categories',
             'represent_form_name_field'  => 'Name forming field for represents',
-
+            'delete_subcategories'       => 'Delete subcategories on category delete',
+            'delete_represents'          => 'Delete represents on category delete',
         ];
     }
 
