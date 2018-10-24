@@ -7,6 +7,8 @@ use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
+use Iliich246\YicmsCommon\Languages\Language;
+use Iliich246\YicmsCommon\Languages\LanguagesDb;
 use Iliich246\YicmsCommon\Fields\FieldTemplate;
 use Iliich246\YicmsCommon\Files\FilesBlock;
 use Iliich246\YicmsCommon\Images\ImagesBlock;
@@ -66,6 +68,8 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     private $representsBuffer = [];
     /** @var bool when true all represents was fetched from db */
     private $isAllRepresentsFetched = false;
+    /** @var EssencesNamesTranslatesDb[] buffer for language */
+    private $essenceNameTranslations;
 
     /**
      * @inheritdoc
@@ -438,6 +442,58 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     {
         //TODO: make this method
         return true;
+    }
+
+    /**
+     * Returns name of essence
+     * @param LanguagesDb|null $language
+     * @return string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function name(LanguagesDb $language = null)
+    {
+        if (!$language) $language = Language::getInstance()->getCurrentLanguage();
+
+        //language buffer empty
+        if (is_null($this->essenceNameTranslations[$language->id])) {
+            $this->essenceNameTranslations[$language->id] = EssencesNamesTranslatesDb::find()->where([
+                'essence_id'         => $this->id,
+                'common_language_id' => $language->id,
+            ])->one();
+        }
+
+        if (!$this->essenceNameTranslations[$language->id]) return $this->program_name;
+
+        /** @var EssencesNamesTranslatesDb $translate */
+        $translate = $this->essenceNameTranslations[$language->id];
+
+        return $translate->name;
+    }
+
+    /**
+     * Returns description of essence
+     * @param LanguagesDb|null $language
+     * @return bool|string
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function description(LanguagesDb $language = null)
+    {
+        if (!$language) $language = Language::getInstance()->getCurrentLanguage();
+
+        //language buffer empty
+        if (is_null($this->essenceNameTranslations[$language->id])) {
+            $this->essenceNameTranslations[$language->id] = EssencesNamesTranslatesDb::find()->where([
+                'essence_id'         => $this->id,
+                'common_language_id' => $language->id,
+            ])->one();
+        }
+
+        if (!$this->essenceNameTranslations[$language->id]) return false;
+
+        /** @var EssencesNamesTranslatesDb $translate */
+        $translate = $this->essenceNameTranslations[$language->id];
+
+        return $translate->description;
     }
 
     /**

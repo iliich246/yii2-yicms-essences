@@ -40,26 +40,4 @@ class EssencesNamesTranslatesDb extends \yii\db\ActiveRecord
             [['essence_id'], 'exist', 'skipOnError' => true, 'targetClass' => Essences::className(), 'targetAttribute' => ['essence_id' => 'id']],
         ];
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function attributeLabels()
-    {
-        return [
-            'id' => 'ID',
-            'essence_id' => 'Essence ID',
-            'common_language_id' => 'Common Language ID',
-            'name' => 'Name',
-            'description' => 'Description',
-        ];
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getEssence()
-    {
-        return $this->hasOne(Essences::className(), ['id' => 'essence_id']);
-    }
 }
