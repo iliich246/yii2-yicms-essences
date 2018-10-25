@@ -2,7 +2,6 @@
 
 namespace Iliich246\YicmsEssences\Controllers;
 
-use Iliich246\YicmsEssences\Base\EssenceDevTranslateForm;
 use Yii;
 use yii\base\Model;
 use yii\helpers\Url;
@@ -27,9 +26,8 @@ use Iliich246\YicmsCommon\Images\ImagesDevModalWidget;
 use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
 use Iliich246\YicmsCommon\Conditions\DevConditionsGroup;
 use Iliich246\YicmsCommon\Conditions\ConditionsDevModalWidget;
-use Iliich246\YicmsPages\Base\Pages;
-use Iliich246\YicmsPages\Base\PagesException;
-use Iliich246\YicmsPages\Base\PageDevTranslatesForm;
+use Iliich246\YicmsEssences\Base\EssenceDevTranslateForm;
+
 
 /**
  * Class DeveloperController
@@ -76,6 +74,7 @@ class DeveloperController extends Controller
     /**
      * Creates new essence
      * @return string|\yii\web\Response
+     * @throws EssencesException
      */
     public function actionCreateEssence()
     {
@@ -112,7 +111,6 @@ class DeveloperController extends Controller
 
         $essence->scenario = Essences::SCENARIO_UPDATE;
 
-        //update page via pjax
         if ($essence->load(Yii::$app->request->post()) && $essence->validate()) {
 
             if ($essence->save()) {
@@ -185,10 +183,12 @@ class DeveloperController extends Controller
     /**
      * Action for delete essence
      * @param $id
-     * @param bool|false $deletePass
+     * @param bool $deletePass
      * @return \yii\web\Response
      * @throws EssencesException
      * @throws NotFoundHttpException
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
     public function actionDeleteEssence($id, $deletePass = false)
     {

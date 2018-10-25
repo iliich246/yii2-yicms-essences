@@ -9,7 +9,7 @@ use Iliich246\YicmsCommon\Base\AbstractTranslateForm;
  *
  * @property EssencesNamesTranslatesDb $currentTranslateDb
  *
- * @package Iliich246\YicmsEssences\Base
+ * @author iliich246 <iliich246@gmail.com>
  */
 class EssenceDevTranslateForm extends AbstractTranslateForm
 {
@@ -74,7 +74,7 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
      */
     public function save()
     {
-        $this->currentTranslateDb->name = $this->name;
+        $this->currentTranslateDb->name        = $this->name;
         $this->currentTranslateDb->description = $this->description;
 
         return $this->currentTranslateDb->save();
@@ -97,7 +97,7 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
         if (!$this->currentTranslateDb)
             $this->createTranslateDb();
         else {
-            $this->name = $this->currentTranslateDb->name;
+            $this->name        = $this->currentTranslateDb->name;
             $this->description = $this->currentTranslateDb->description;
         }
 
@@ -111,7 +111,7 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
     {
         $this->currentTranslateDb = new EssencesNamesTranslatesDb();
         $this->currentTranslateDb->common_language_id = $this->language->id;
-        $this->currentTranslateDb->essence_id = $this->essence->id;
+        $this->currentTranslateDb->essence_id         = $this->essence->id;
 
         return $this->currentTranslateDb->save();
     }

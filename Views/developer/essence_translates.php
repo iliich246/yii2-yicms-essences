@@ -45,7 +45,7 @@ $this->registerJs($js, $this::POS_READY);
 
 <div class="col-sm-9 content">
     <div class="row content-block content-header">
-        <h1>Translations of page names</h1>
+        <h1>Translations of essence names</h1>
     </div>
 
     <div class="row content-block breadcrumbs">

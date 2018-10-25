@@ -1,7 +1,6 @@
 <?php
 
 use yii\db\Migration;
-use Iliich246\YicmsCommon\Languages\Language;
 
 /**
  * Class m180423_213106_essences_init

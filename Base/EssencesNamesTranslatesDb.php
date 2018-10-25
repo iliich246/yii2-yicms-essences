@@ -2,7 +2,7 @@
 
 namespace Iliich246\YicmsEssences\Base;
 
-use Yii;
+use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Languages\LanguagesDb;
 
 /**
@@ -14,11 +14,9 @@ use Iliich246\YicmsCommon\Languages\LanguagesDb;
  * @property string $name
  * @property string $description
  *
- * @property Essences $essence
- *
  * @author iliich246 <iliich246@gmail.com>
  */
-class EssencesNamesTranslatesDb extends \yii\db\ActiveRecord
+class EssencesNamesTranslatesDb extends ActiveRecord
 {
     /**
      * @inheritdoc
