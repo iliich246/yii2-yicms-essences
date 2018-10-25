@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "iliich246\\yicms_common\\": ""
+            "iliich246\\yicms_essences\\": ""
         }
     }
 }

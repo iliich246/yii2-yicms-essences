@@ -387,7 +387,11 @@ class EssencesRepresents extends ActiveRecord implements
             return $this->id;
         }
 
-        return (string)$this->getField($fieldTemplate->program_name);
+        $name = trim((string)$this->getField($fieldTemplate->program_name));
+
+        if (!$name) return $this->id;
+
+        return $name;
     }
 
     //public function load()
@@ -610,7 +614,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function getFieldTemplateReference()
     {
-        $essence = $this->essenceInstance;
+        $essence = $this->getEssence();
 
         if (!$essence->field_template_reference_represent) {
             $essence->field_template_reference_represent = FieldTemplate::generateTemplateReference();
