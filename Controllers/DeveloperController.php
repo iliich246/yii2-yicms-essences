@@ -183,20 +183,21 @@ class DeveloperController extends Controller
     /**
      * Action for delete essence
      * @param $id
-     * @param bool $deletePass
+     * @param bool|false $deletePass
      * @return \yii\web\Response
+     * @throws BadRequestHttpException
      * @throws EssencesException
      * @throws NotFoundHttpException
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
      */
     public function actionDeleteEssence($id, $deletePass = false)
     {
+        if (!Yii::$app->request->isPjax) throw new BadRequestHttpException();
+
         /** @var Essences $essence */
         $essence = Essences::findOne($id);
 
         if (!$essence)
-            throw new NotFoundHttpException('Wrong essence ID');
+            throw new NotFoundHttpException('Wrong essence id');
 
         if ($essence->isConstraints())
             if (!Yii::$app->security->validatePassword($deletePass, CommonHashForm::DEV_HASH))
