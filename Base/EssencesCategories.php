@@ -3,6 +3,7 @@
 namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
+use yii\db\ActiveQuery;
 use yii\behaviors\TimestampBehavior;
 use Iliich246\YicmsCommon\CommonModule;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -30,8 +31,6 @@ use Iliich246\YicmsCommon\Conditions\ConditionsHandler;
 use Iliich246\YicmsCommon\Conditions\ConditionsInterface;
 use Iliich246\YicmsCommon\Conditions\ConditionsReferenceInterface;
 use Iliich246\YicmsEssences\EssencesModule;
-use yii\db\ActiveQuery;
-use yii\db\ActiveRecord;
 
 /**
  * Class EssencesCategories

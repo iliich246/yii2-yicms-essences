@@ -294,7 +294,7 @@ class DeveloperController extends Controller
 
             return FieldsDevModalWidget::widget([
                 'devFieldGroup' => $devFieldGroup,
-                'dataSaved' => true,
+                'dataSaved'     => true,
             ]);
         }
 
@@ -311,7 +311,7 @@ class DeveloperController extends Controller
 
             return FilesDevModalWidget::widget([
                 'devFilesGroup' => $devFilesGroup,
-                'dataSaved' => true,
+                'dataSaved'     => true,
             ]);
         }
 
@@ -328,7 +328,7 @@ class DeveloperController extends Controller
 
             return ImagesDevModalWidget::widget([
                 'devImagesGroup' => $devImagesGroup,
-                'dataSaved' => true,
+                'dataSaved'      => true,
             ]);
         }
 
@@ -345,7 +345,7 @@ class DeveloperController extends Controller
 
             return ConditionsDevModalWidget::widget([
                 'devConditionsGroup' => $devConditionsGroup,
-                'dataSaved' => true,
+                'dataSaved'          => true,
             ]);
         }
 

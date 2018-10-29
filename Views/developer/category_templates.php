@@ -1,10 +1,6 @@
 <?php
 
-use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\widgets\Pjax;
-use yii\bootstrap\ActiveForm;
-use Iliich246\YicmsEssences\Base\Essences;
 use Iliich246\YicmsCommon\Fields\FieldTemplate;
 use Iliich246\YicmsCommon\Fields\FieldsDevModalWidget;
 use Iliich246\YicmsCommon\Files\FilesDevModalWidget;
