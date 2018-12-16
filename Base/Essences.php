@@ -7,6 +7,7 @@ use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
+use Iliich246\YicmsCommon\Base\NonexistentInterface;
 use Iliich246\YicmsCommon\Languages\Language;
 use Iliich246\YicmsCommon\Languages\LanguagesDb;
 use Iliich246\YicmsCommon\Fields\FieldTemplate;
@@ -47,7 +48,9 @@ use Iliich246\YicmsEssences\EssencesModule;
  *
  * @author iliich246 <iliich246@gmail.com>
  */
-class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
+class Essences extends AbstractTreeNodeCollection implements
+    SortOrderInterface,
+    NonexistentInterface
 {
     use SortOrderTrait;
 
@@ -70,6 +73,10 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
     private $isAllRepresentsFetched = false;
     /** @var EssencesNamesTranslatesDb[] buffer for language */
     private $essenceNameTranslations;
+    /** @var bool keep nonexistent state of page */
+    private $isNonexistent = false;
+    /** @var string keeps name of nonexistent page */
+    private $nonexistentName;
 
     /**
      * @inheritdoc
@@ -257,7 +264,11 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             throw new EssencesException('Сan not find essence with name ' . $programName);
         }
 
-        return new self();//TODO: makes mark as empty essence
+        $nonexistentEssence= new self();
+        $nonexistentEssence->setNonexistent();
+        $nonexistentEssence->nonexistentName = $programName;
+
+        return $nonexistentEssence;
     }
 
     /**
@@ -284,7 +295,7 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             throw new EssencesException('Сan not find essence with id ' . $id);
         }
 
-        return new self();//TODO: makes mark as empty essence
+        return $essence;
     }
 
     /**
@@ -804,5 +815,37 @@ class Essences extends AbstractTreeNodeCollection implements SortOrderInterface
             'id'         => $id,
             'essence_id' => $this->id,
         ])->one();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isNonexistent()
+    {
+        return $this->isNonexistent;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNonexistent()
+    {
+        $this->isNonexistent = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNonexistentName()
+    {
+        return $this->nonexistentName;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNonexistentName($name)
+    {
+        $this->nonexistentName = $name;
     }
 }
