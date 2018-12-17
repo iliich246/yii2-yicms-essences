@@ -9,6 +9,7 @@ use Iliich246\YicmsCommon\CommonModule;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
+use Iliich246\YicmsCommon\Base\NonexistentInterface;
 use Iliich246\YicmsCommon\Fields\Field;
 use Iliich246\YicmsCommon\Fields\FieldsHandler;
 use Iliich246\YicmsCommon\Fields\FieldTemplate;
@@ -63,7 +64,8 @@ class EssencesRepresents extends ActiveRecord implements
     ConditionsReferenceInterface,
     ConditionsInterface,
     FictiveInterface,
-    SortOrderInterface
+    SortOrderInterface,
+    NonexistentInterface
 {
     use SortOrderTrait;
 
@@ -88,6 +90,11 @@ class EssencesRepresents extends ActiveRecord implements
     private $isFictive = false;
     /** @var EssencesCategories[]|null buffer of categories for this represent */
     private $categoriesBuffer = null;
+    /** @var bool keep nonexistent state of represent */
+    private $isNonexistent = false;
+    /** @var string keeps name of nonexistent represent */
+    private $nonexistentName;
+
 
     /**
      * @inheritdoc
@@ -939,5 +946,37 @@ class EssencesRepresents extends ActiveRecord implements
     public function isFictive()
     {
         return $this->isFictive;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isNonexistent()
+    {
+        return $this->isNonexistent;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNonexistent()
+    {
+        $this->isNonexistent = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNonexistentName()
+    {
+        return $this->nonexistentName;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNonexistentName($name)
+    {
+        $this->nonexistentName = $name;
     }
 }

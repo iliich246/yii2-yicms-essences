@@ -9,6 +9,7 @@ use Iliich246\YicmsCommon\CommonModule;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
+use Iliich246\YicmsCommon\Base\NonexistentInterface;
 use Iliich246\YicmsCommon\Languages\LanguagesDb;
 use Iliich246\YicmsCommon\Fields\Field;
 use Iliich246\YicmsCommon\Fields\FieldsHandler;
@@ -64,7 +65,8 @@ class EssencesCategories extends AbstractTreeNode implements
     ConditionsReferenceInterface,
     ConditionsInterface,
     FictiveInterface,
-    SortOrderInterface
+    SortOrderInterface,
+    NonexistentInterface
 {
     use SortOrderTrait;
 
@@ -83,6 +85,10 @@ class EssencesCategories extends AbstractTreeNode implements
     private $isFictive = false;
     /** @var bool needed for delete sequence. Used for subcategories mark */
     private $markedAsSubcategory = false;
+    /** @var bool keep nonexistent state of category */
+    private $isNonexistent = false;
+    /** @var string keeps name of nonexistent category */
+    private $nonexistentName;
 
     /**
      * @inheritdoc
@@ -320,6 +326,15 @@ class EssencesCategories extends AbstractTreeNode implements
         $this->category_order = $this->maxOrder();
 
         return $this->save(false);
+    }
+
+    /**
+     * Proxy method name() to magical __toString()
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string)$this->name();
     }
 
     /**
@@ -677,5 +692,37 @@ class EssencesCategories extends AbstractTreeNode implements
     public function isFictive()
     {
         return $this->isFictive;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isNonexistent()
+    {
+        return $this->isNonexistent;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNonexistent()
+    {
+        $this->isNonexistent = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getNonexistentName()
+    {
+        return $this->nonexistentName;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setNonexistentName($name)
+    {
+        $this->nonexistentName = $name;
     }
 }

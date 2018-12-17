@@ -60,22 +60,22 @@ class Essences extends AbstractTreeNodeCollection implements
     /** @var self[] buffer array */
     private static $essencesBuffer = [];
     /** @var bool if true standard fields template for categories will be created on essence create */
-    public $createCategoriesStandardFields = false;
+    public $createCategoriesStandardFields = true;
     /** @var bool if true standard fields template for represents will be created on essence create */
-    public $createRepresentsStandardFields = false;
+    public $createRepresentsStandardFields = true;
     /** @var bool if true seo fields template for categories will be created on essence create */
-    public $createCategoriesSeoFields      = false;
+    public $createCategoriesSeoFields      = true;
     /** @var bool if true seo fields template for represents will be created on essence create */
-    public $createRepresentSeoFields       = false;
+    public $createRepresentSeoFields       = true;
     /** @var EssencesRepresents[] buffer*/
     private $representsBuffer = [];
     /** @var bool when true all represents was fetched from db */
     private $isAllRepresentsFetched = false;
     /** @var EssencesNamesTranslatesDb[] buffer for language */
     private $essenceNameTranslations;
-    /** @var bool keep nonexistent state of page */
+    /** @var bool keep nonexistent state of essence */
     private $isNonexistent = false;
-    /** @var string keeps name of nonexistent page */
+    /** @var string keeps name of nonexistent essence */
     private $nonexistentName;
 
     /**
@@ -91,17 +91,21 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function init()
     {
-        $this->visible                     = true;
-        $this->editable                    = true;
-        $this->is_categories               = true;
-        $this->categories_create_by_user   = true;
-        $this->count_subcategories         = 0;
-        $this->is_multiple_categories      = false;
-        $this->is_intermediate_categories  = false;
-        $this->max_categories              = 0;
-        $this->represents_pagination_count = 50;
-        $this->delete_subcategories        = true;
-        $this->delete_represents           = false;
+        $this->visible                        = true;
+        $this->editable                       = true;
+        $this->is_categories                  = true;
+        $this->categories_create_by_user      = true;
+        $this->count_subcategories            = 0;
+        $this->is_multiple_categories         = false;
+        $this->is_intermediate_categories     = false;
+        $this->max_categories                 = 0;
+        $this->represents_pagination_count    = 50;
+        $this->delete_subcategories           = true;
+        $this->delete_represents              = false;
+        $this->createRepresentsStandardFields = true;
+        $this->createRepresentSeoFields       = true;
+        $this->createCategoriesStandardFields = true;
+        $this->createCategoriesSeoFields      = true;
 
         parent::init();
     }
@@ -134,6 +138,10 @@ class Essences extends AbstractTreeNodeCollection implements
                     'categories_create_by_user',
                     'delete_subcategories',
                     'delete_represents',
+                    'createRepresentsStandardFields',
+                    'createCategoriesStandardFields',
+                    'createRepresentSeoFields',
+                    'createCategoriesSeoFields',
                 ],
                 'boolean'
             ],
@@ -141,7 +149,7 @@ class Essences extends AbstractTreeNodeCollection implements
                 [
                     'category_form_name_field',
                     'represent_form_name_field',
-                    'represents_pagination_count'
+
                 ],
                 'integer'
             ],
@@ -159,7 +167,9 @@ class Essences extends AbstractTreeNodeCollection implements
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
                 'category_form_name_field', 'represent_form_name_field', 'count_subcategories',
                 'is_intermediate_categories', 'max_categories', 'categories_create_by_user',
-                'represents_pagination_count', 'delete_subcategories', 'delete_represents'
+                'represents_pagination_count', 'delete_subcategories', 'delete_represents',
+                'createCategoriesStandardFields', 'createRepresentsStandardFields',
+                'createCategoriesSeoFields', 'createRepresentSeoFields'
             ],
             self::SCENARIO_UPDATE => [
                 'program_name', 'is_categories', 'editable', 'visible', 'is_multiple_categories',
@@ -305,6 +315,13 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function getCategoryById($id)
     {
+        if ($this->isNonexistent()) {
+            $nonexistentCategory = new EssencesCategories();
+            $nonexistentCategory->setNonexistent();
+
+            return $nonexistentCategory;
+        }
+
         return $this->getNodeById($id);
     }
 
@@ -315,6 +332,13 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function getRepresentById($id)
     {
+        if ($this->isNonexistent()) {
+            $nonexistentRepresent = new EssencesRepresents();
+            $nonexistentRepresent->setNonexistent();
+
+            return $nonexistentRepresent;
+        }
+
         if (isset($this->representsBuffer[$id]))
             return $this->representsBuffer[$id];
 
@@ -327,6 +351,9 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function getAllRepresents()
     {
+        if ($this->isNonexistent())
+            return [];
+
         if ($this->isAllRepresentsFetched)
             return $this->representsBuffer;
 
@@ -426,12 +453,140 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function create()
     {
+        if ($this->isNonexistent) return false;
+
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_order = $this->maxOrder();
         }
 
         if (!$this->save(false))
             throw new EssencesException('Can not create essence '. $this->program_name);
+
+        if ($this->createCategoriesSeoFields) {
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_category;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'title';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_INPUT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+            $fieldTemplate->field_order              = 1;
+
+            $fieldTemplate->save(false);
+
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_category;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'meta_description';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_TEXT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+            $fieldTemplate->field_order              = 2;
+
+            $fieldTemplate->save(false);
+
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_category;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'meta_keywords';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_TEXT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+            $fieldTemplate->field_order              = 3;
+
+            $fieldTemplate->save(false);
+            //TODO: makes create translates for standard fields
+
+            return parent::save(false);
+        }
+
+        if ($this->createCategoriesStandardFields) {
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_category;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'name';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_INPUT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+
+            $count = FieldTemplate::find()->where([
+                'field_template_reference' => $this->field_template_reference_category
+            ])->count();
+
+            $fieldTemplate->field_order = ++$count;
+
+            $fieldTemplate->save(false);
+
+            $this->category_form_name_field = $fieldTemplate->id;
+        }
+
+        if ($this->createRepresentSeoFields) {
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_represent;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'title';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_INPUT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+            $fieldTemplate->field_order              = 1;
+
+            $fieldTemplate->save(false);
+
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_represent;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'meta_description';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_TEXT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+            $fieldTemplate->field_order              = 2;
+
+            $fieldTemplate->save(false);
+
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_represent;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'meta_keywords';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_TEXT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+            $fieldTemplate->field_order              = 3;
+
+            $fieldTemplate->save(false);
+            //TODO: makes create translates for standard fields
+
+            return parent::save(false);
+        }
+
+        if ($this->createRepresentsStandardFields) {
+            $fieldTemplate                           = new FieldTemplate();
+            $fieldTemplate->field_template_reference = $this->field_template_reference_represent;
+            $fieldTemplate->scenario                 = FieldTemplate::SCENARIO_CREATE;
+            $fieldTemplate->program_name             = 'name';
+            $fieldTemplate->type                     = FieldTemplate::TYPE_INPUT;
+            $fieldTemplate->language_type            = FieldTemplate::LANGUAGE_TYPE_TRANSLATABLE;
+            $fieldTemplate->visible                  = true;
+            $fieldTemplate->editable                 = true;
+
+            $count = FieldTemplate::find()->where([
+                'field_template_reference' => $this->field_template_reference_category
+            ])->count();
+
+            $fieldTemplate->field_order = ++$count;
+
+            $fieldTemplate->save(false);
+
+            $this->represent_form_name_field = $fieldTemplate->id;
+        }
+
+
 
         return true;
     }
@@ -545,7 +700,7 @@ class Essences extends AbstractTreeNodeCollection implements
 
     /**
      *
-     * @return AbstractTreeNode[]
+     * @return AbstractTreeNode[]|EssencesCategories[]
      */
     public function getCategories()
     {
