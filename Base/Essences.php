@@ -499,8 +499,6 @@ class Essences extends AbstractTreeNodeCollection implements
 
             $fieldTemplate->save(false);
             //TODO: makes create translates for standard fields
-
-            return parent::save(false);
         }
 
         if ($this->createCategoriesStandardFields) {
@@ -561,8 +559,6 @@ class Essences extends AbstractTreeNodeCollection implements
 
             $fieldTemplate->save(false);
             //TODO: makes create translates for standard fields
-
-            return parent::save(false);
         }
 
         if ($this->createRepresentsStandardFields) {
@@ -585,8 +581,6 @@ class Essences extends AbstractTreeNodeCollection implements
 
             $this->represent_form_name_field = $fieldTemplate->id;
         }
-
-
 
         return true;
     }

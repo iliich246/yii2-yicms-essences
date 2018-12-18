@@ -64,6 +64,8 @@ class m180423_213106_essences_init extends Migration
             'common_language_id' => $this->integer(),
             'name'               => $this->string(),
             'description'        => $this->string(),
+            'category_name'      => $this->string(),
+            'represent_name'     => $this->string(),
         ]);
 
         $this->addForeignKey('essences_names_translates-to-essences',

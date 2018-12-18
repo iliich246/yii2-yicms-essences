@@ -17,6 +17,10 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
     public $name;
     /** @var string description of essence on current model language */
     public $description;
+    /** @var string name of category in admin part of site */
+    public $categoryName;
+    /** @var string name of represents in admin part of site  */
+    public $representName;
     /** @var Essences db associated with this model */
     public $essence;
 
@@ -26,8 +30,10 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
     public function attributeLabels()
     {
         return [
-            'name'        => 'Essence name on language "' . $this->language->name . '"',
-            'description' => 'Description of essence on language "' . $this->language->name . '"',
+            'name'          => 'Essence name on language "' . $this->language->name . '"',
+            'description'   => 'Description of essence on language "' . $this->language->name . '"',
+            'categoryName'  => 'Name of category of essence on language"' . $this->language->name . '"',
+            'representName' => 'Name of represent of essence on language"' . $this->language->name . '"',
         ];
     }
 
@@ -38,7 +44,7 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
     {
         return [
             ['name', 'string', 'max' => '50', 'tooLong' => 'Name of essence must be less than 50 symbols'],
-            ['description', 'string'],
+            [['description', 'categoryName', 'representName'], 'string'],
         ];
     }
 
@@ -74,8 +80,10 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
      */
     public function save()
     {
-        $this->currentTranslateDb->name        = $this->name;
-        $this->currentTranslateDb->description = $this->description;
+        $this->currentTranslateDb->name           = $this->name;
+        $this->currentTranslateDb->description    = $this->description;
+        $this->currentTranslateDb->category_name  = $this->categoryName;
+        $this->currentTranslateDb->represent_name = $this->representName;
 
         return $this->currentTranslateDb->save();
     }
@@ -97,8 +105,10 @@ class EssenceDevTranslateForm extends AbstractTranslateForm
         if (!$this->currentTranslateDb)
             $this->createTranslateDb();
         else {
-            $this->name        = $this->currentTranslateDb->name;
-            $this->description = $this->currentTranslateDb->description;
+            $this->name          = $this->currentTranslateDb->name;
+            $this->description   = $this->currentTranslateDb->description;
+            $this->categoryName  = $this->currentTranslateDb->category_name;
+            $this->representName = $this->currentTranslateDb->represent_name;
         }
 
         return $this->currentTranslateDb;
