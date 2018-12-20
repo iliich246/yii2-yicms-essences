@@ -566,6 +566,17 @@ class EssencesRepresents extends ActiveRecord implements
     }
 
     /**
+     * Delete represent only without any constrains
+     * @return false|int
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function simpleDelete()
+    {
+        return parent::delete();
+    }
+
+    /**
      * Associate field category with represents category, used for input fields
      * @return int
      */

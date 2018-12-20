@@ -329,8 +329,20 @@ class EssencesCategories extends AbstractTreeNode implements
     }
 
     /**
+     * Delete category without constrains
+     * @return false|int
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function simpleDelete()
+    {
+        return parent::delete();
+    }
+
+    /**
      * Proxy method name() to magical __toString()
      * @return string
+     * @throws EssencesException
      */
     public function __toString()
     {

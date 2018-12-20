@@ -520,6 +520,7 @@ class Essences extends AbstractTreeNodeCollection implements
             $fieldTemplate->save(false);
 
             $this->category_form_name_field = $fieldTemplate->id;
+            $this->save(false);
         }
 
         if ($this->createRepresentSeoFields) {
@@ -580,6 +581,7 @@ class Essences extends AbstractTreeNodeCollection implements
             $fieldTemplate->save(false);
 
             $this->represent_form_name_field = $fieldTemplate->id;
+            $this->save(false);
         }
 
         return true;
@@ -590,8 +592,117 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function delete()
     {
-        //return parent::delete();
-        return true;
+        if ($this->isNonexistent) return false;
+
+        //for categories
+        /** @var FieldTemplate[] $fieldTemplatesCategory */
+        $fieldTemplatesCategory = FieldTemplate::find()->where([
+            'field_template_reference' => $this->getCategoryFieldTemplateReference(),
+        ])->all();
+
+        foreach($fieldTemplatesCategory as $fieldTemplate)
+            $fieldTemplate->delete();
+
+        /** @var FilesBlock[] $filesBlocksCategory */
+        $filesBlocksCategory = FilesBlock::find()->where([
+            'file_template_reference' => $this->getCategoryFileTemplateReference(),
+        ])->all();
+
+        foreach($filesBlocksCategory as $fileBlock)
+            $fileBlock->delete();
+
+        /** @var ImagesBlock[] $imageBlocksCategory */
+        $imageBlocksCategory = ImagesBlock::find()->where([
+            'image_template_reference' => $this->getCategoryImageTemplateReference(),
+        ])->all();
+
+        foreach($imageBlocksCategory as $imageBlock)
+            $imageBlock->delete();
+
+        /** @var ConditionTemplate[] $conditionTemplatesCategory */
+        $conditionTemplatesCategory = ConditionTemplate::find()->where([
+            'condition_template_reference' => $this->getCategoryConditionTemplateReference(),
+        ])->all();
+
+        foreach($conditionTemplatesCategory as $conditionTemplate)
+            $conditionTemplate->delete();
+
+        //for represents
+        /** @var FieldTemplate[] $fieldTemplatesRepresent */
+        $fieldTemplatesRepresent = FieldTemplate::find()->where([
+            'field_template_reference' => $this->getRepresentFieldTemplateReference(),
+        ])->all();
+
+        foreach($fieldTemplatesRepresent as $fieldTemplate)
+            $fieldTemplate->delete();
+
+        /** @var FilesBlock[] $filesBlocksRepresent */
+        $filesBlocksRepresent = FilesBlock::find()->where([
+            'file_template_reference' => $this->getRepresentFileTemplateReference(),
+        ])->all();
+
+        foreach($filesBlocksRepresent as $fileBlock)
+            $fileBlock->delete();
+
+        /** @var ImagesBlock[] $imageBlocksRepresent */
+        $imageBlocksRepresent = ImagesBlock::find()->where([
+            'image_template_reference' => $this->getRepresentImageTemplateReference(),
+        ])->all();
+
+        foreach($imageBlocksRepresent as $imageBlock)
+            $imageBlock->delete();
+
+        /** @var ConditionTemplate[] $conditionTemplatesRepresent */
+        $conditionTemplatesRepresent = ConditionTemplate::find()->where([
+            'condition_template_reference' => $this->getRepresentConditionTemplateReference(),
+        ])->all();
+
+        foreach($conditionTemplatesRepresent as $conditionTemplate)
+            $conditionTemplate->delete();
+
+        /** @var EssencesRepresents[] $represents */
+        $represents = EssencesRepresents::find()->where([
+            'essence_id' => $this->id
+        ])->all();
+
+        foreach ($represents as $represent) {
+            /** @var EssenceRepresentToCategory[] $representToCategories */
+            $representToCategories = EssenceRepresentToCategory::find()->where([
+                'represent_id' => $represent->id,
+            ])->all();
+
+            foreach ($representToCategories as $representCategory)
+                $representCategory->delete();
+
+            $represent->simpleDelete();
+        }
+
+        /** @var EssencesCategories[] $categories */
+        $categories = EssencesCategories::find()->where([
+            'essence_id' => $this->id
+        ])->all();
+
+        foreach ($categories as $category) {
+            /** @var EssenceRepresentToCategory[] $representToCategories */
+            $representToCategories = EssenceRepresentToCategory::find()->where([
+                'category_id' => $category->id,
+            ])->all();
+
+            foreach ($representToCategories as $representCategory)
+                $representCategory->delete();
+
+            $category->simpleDelete();
+        }
+
+        /** @var EssencesNamesTranslatesDb[] $essenceNames */
+        $essenceNames = EssencesNamesTranslatesDb::find()->where([
+            'essence_id' => $this->id
+        ])->all();
+
+        foreach($essenceNames as $essenceName)
+            $essenceName->delete();
+
+        return parent::delete();
     }
 
     /**
@@ -600,8 +711,19 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function isConstraints()
     {
-        //TODO: make this method
-        return true;
+        $categoriesCount = EssencesCategories::find()->where([
+            'essence_id' => $this->id
+        ])->count();
+
+        if ($categoriesCount) return true;
+
+        $representsCount = EssencesRepresents::find()->where([
+            'essence_id' => $this->id
+        ])->count();
+
+        if ($representsCount) return true;
+
+        return false;
     }
 
     /**
@@ -614,20 +736,9 @@ class Essences extends AbstractTreeNodeCollection implements
     {
         if (!$language) $language = Language::getInstance()->getCurrentLanguage();
 
-        //language buffer empty
-        if (is_null($this->essenceNameTranslations[$language->id])) {
-            $this->essenceNameTranslations[$language->id] = EssencesNamesTranslatesDb::find()->where([
-                'essence_id'         => $this->id,
-                'common_language_id' => $language->id,
-            ])->one();
-        }
+        if (!EssencesNamesTranslatesDb::getTranslate($this->id, $language->id)) return $this->program_name;
 
-        if (!$this->essenceNameTranslations[$language->id]) return $this->program_name;
-
-        /** @var EssencesNamesTranslatesDb $translate */
-        $translate = $this->essenceNameTranslations[$language->id];
-
-        return $translate->name;
+        return EssencesNamesTranslatesDb::getTranslate($this->id, $language->id)->name;
     }
 
     /**
@@ -640,20 +751,9 @@ class Essences extends AbstractTreeNodeCollection implements
     {
         if (!$language) $language = Language::getInstance()->getCurrentLanguage();
 
-        //language buffer empty
-        if (is_null($this->essenceNameTranslations[$language->id])) {
-            $this->essenceNameTranslations[$language->id] = EssencesNamesTranslatesDb::find()->where([
-                'essence_id'         => $this->id,
-                'common_language_id' => $language->id,
-            ])->one();
-        }
+        if (!EssencesNamesTranslatesDb::getTranslate($this->id, $language->id)) return '';
 
-        if (!$this->essenceNameTranslations[$language->id]) return false;
-
-        /** @var EssencesNamesTranslatesDb $translate */
-        $translate = $this->essenceNameTranslations[$language->id];
-
-        return $translate->description;
+        return EssencesNamesTranslatesDb::getTranslate($this->id, $language->id)->description;
     }
 
     /**

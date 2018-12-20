@@ -31,6 +31,7 @@ class EssenceRepresentToCategory extends ActiveRecord implements SortOrderInterf
     private static $categoriesBuffer = [];
     /** @var int id of category that proxy from represent  for find represent order relative category */
     private $orderCategoryProxy;
+
     /**
      * @inheritdoc
      */
