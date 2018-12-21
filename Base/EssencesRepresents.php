@@ -95,7 +95,6 @@ class EssencesRepresents extends ActiveRecord implements
     /** @var string keeps name of nonexistent represent */
     private $nonexistentName;
 
-
     /**
      * @inheritdoc
      */
@@ -203,7 +202,7 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * Return array of categories of this represent
-     * @return EssencesCategories[]|null
+     * @return EssencesCategories[]|[]
      * @throws EssencesException
      */
     public function getCategories()
@@ -223,6 +222,17 @@ class EssencesRepresents extends ActiveRecord implements
     }
 
     /**
+     * Return one category of this represent
+     * @return EssencesCategories
+     */
+    public function getCategory()
+    {
+        if (!is_null($this->categoriesBuffer)) return current(reset($this->categoriesBuffer));
+
+        return current($this->getCategories());
+    }
+
+    /**
      * Return count of categories associated with this represent
      * @return int
      * @throws EssencesException
@@ -233,11 +243,6 @@ class EssencesRepresents extends ActiveRecord implements
 
         return count($this->getCategories());
     }
-
-//    public function getCategory()
-//    {
-//        //if (!is_null($this->categoriesBuffer)) return first($this->categoriesBuffer);
-//    }
 
     /**
      * Creates list of categories for create/update represent drop lists
@@ -574,6 +579,16 @@ class EssencesRepresents extends ActiveRecord implements
     public function simpleDelete()
     {
         return parent::delete();
+    }
+
+    /**
+     * Proxy method name() to magical __toString()
+     * @return string
+     * @throws EssencesException
+     */
+    public function __toString()
+    {
+        return (string)$this->name();
     }
 
     /**

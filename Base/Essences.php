@@ -311,7 +311,8 @@ class Essences extends AbstractTreeNodeCollection implements
     /**
      * Returns category by id
      * @param $id
-     * @return EssencesCategories|AbstractTreeNode
+     * @return AbstractTreeNode|EssencesCategories|null
+     * @throws EssencesException
      */
     public function getCategoryById($id)
     {
@@ -322,13 +323,25 @@ class Essences extends AbstractTreeNodeCollection implements
             return $nonexistentCategory;
         }
 
-        return $this->getNodeById($id);
+        if ($node = $this->getNodeById($id))
+            return $node;
+
+        Yii::error("Сan not find category with id " . $id, __METHOD__);
+
+        if (defined('YICMS_STRICT')) {
+            throw new EssencesException('Сan not find category with id ' . $id);
+        }
+
+        $nonexistentCategory = new EssencesCategories();
+        $nonexistentCategory->setNonexistent();
+
+        return $nonexistentCategory;
     }
 
-    /**
-     * Returns represent by id
+    /**Returns represent by id
      * @param $id
-     * @return EssencesRepresents|null|static
+     * @return EssencesRepresents
+     * @throws EssencesException
      */
     public function getRepresentById($id)
     {
@@ -342,7 +355,19 @@ class Essences extends AbstractTreeNodeCollection implements
         if (isset($this->representsBuffer[$id]))
             return $this->representsBuffer[$id];
 
-        return $this->representsBuffer[$id] = EssencesRepresents::findOne($id);
+        if ($this->representsBuffer[$id] = EssencesRepresents::findOne($id))
+            return $this->representsBuffer[$id];
+
+        Yii::error("Сan not find represent with id " . $id, __METHOD__);
+
+        if (defined('YICMS_STRICT')) {
+            throw new EssencesException('Сan not find represent with id' . $id);
+        }
+
+        $nonexistentRepresent = new EssencesRepresents();
+        $nonexistentRepresent->setNonexistent();
+
+        return $nonexistentRepresent;
     }
 
     /**
