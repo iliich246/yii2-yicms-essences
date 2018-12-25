@@ -358,9 +358,13 @@ class EssencesCategories extends AbstractTreeNode implements
     public function name()
     {
         $nameFormFieldId = $this->getEssence()->category_form_name_field;
-
+//EssencesModule::t('app', 'Root category');
         if (!$nameFormFieldId) {
-            return $this->id;
+
+            if (CommonModule::isUnderDev())
+                return 'Id = ' . $this->id . '(DEV: category has no selected name field)';
+
+            return 'ID = ' . $this->id;
         }
 
         /** @var FieldTemplate $fieldTemplate */
