@@ -278,12 +278,11 @@ class EssencesCategories extends AbstractTreeNode implements
 
             if (!CommonModule::isUnderDev()) continue;
 
-            $devString = ' |DEV:';
-            $devString .= ' id=' . $node->id;
+            $devString = '';
 
             if ($this->getEssence()->count_subcategories > 0 &&
                 $node->getLevel() > $this->getEssence()->count_subcategories - 2)
-                $devString .= ' (only dev can use this)';
+                $devString = ' |DEV: (only dev can use this)';
 
             $list[$node->id] .= $devString;
         }
@@ -358,24 +357,44 @@ class EssencesCategories extends AbstractTreeNode implements
     public function name()
     {
         $nameFormFieldId = $this->getEssence()->category_form_name_field;
-//EssencesModule::t('app', 'Root category');
+
         if (!$nameFormFieldId) {
 
             if (CommonModule::isUnderDev())
-                return 'Id = ' . $this->id . '(DEV: category has no selected name field)';
+                return 'ID = ' . $this->id . ' (DEV: category has no selected name forming field)';
 
             return 'ID = ' . $this->id;
         }
 
-        /** @var FieldTemplate $fieldTemplate */
-        $fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId);
+        if (is_null($fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId))) {
+            Yii::warning(
+                "Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId, __METHOD__);
 
-        if (!$fieldTemplate) {
-            //TODO: error message
-            return $this->id;
+            if (defined('YICMS_STRICT')) {
+                throw new EssencesException(
+                    "YICMS_STRICT_MODE:
+                Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId);
+            }
+
+            if (CommonModule::isUnderDev())
+                return 'ID = ' . $this->id . ' (DEV: Can`t fetch for FieldTemplate with ID = )' . $nameFormFieldId;
+
+            return 'ID = ' . $this->id;
         }
 
-        return $this->getField($fieldTemplate->program_name) . ' (' . $this->id . ' )' . 'p=' . $this->parent_id;
+        $nameFormingField = $this->getField($fieldTemplate->program_name);
+
+        if (!$nameFormingField->isTranslate()) {
+            if (CommonModule::isUnderDev())
+                return 'ID = ' . $this->id . ' (DEV: category with empty name)';
+
+            return 'ID = ' . $this->id . EssencesModule::t('app', ' (Category has no name)');
+        }
+
+        if (CommonModule::isUnderDev())
+            return  'ID = ' . $this->id . ' ' .  $this->getField($fieldTemplate->program_name);
+
+        return (string)$this->getField($fieldTemplate->program_name);
     }
 
     /**

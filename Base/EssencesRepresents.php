@@ -218,6 +218,8 @@ class EssencesRepresents extends ActiveRecord implements
                 $this->categoriesBuffer[$category->id] = $category;
         }
 
+
+
         return $this->categoriesBuffer;
     }
 
@@ -252,9 +254,13 @@ class EssencesRepresents extends ActiveRecord implements
     {
         $list = [];
 
+        Yii::error('there');
+
         if ($this->scenario != self::SCENARIO_CREATE &&
             !EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))
             $list[0] = EssencesModule::t('app', 'No category selected');
+
+
 
         foreach ($this->getEssence()->getCategories() as $category) {
             if ($this->scenario == self::SCENARIO_UPDATE &&
@@ -280,6 +286,8 @@ class EssencesRepresents extends ActiveRecord implements
 
             $list[$category->id] .= $devString;
         }
+
+
 
         return $list;
     }
@@ -388,22 +396,42 @@ class EssencesRepresents extends ActiveRecord implements
         $nameFormFieldId = $this->getEssence()->represent_form_name_field;
 
         if (!$nameFormFieldId) {
-            return $this->id;
+
+            if (CommonModule::isUnderDev())
+                return 'ID = ' . $this->id . ' (DEV: represent has no selected name forming field)';
+
+            return 'ID = ' . $this->id;
         }
 
-        /** @var FieldTemplate $fieldTemplate */
-        $fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId);
+        if (is_null($fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId))) {
+            Yii::warning(
+                "Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId, __METHOD__);
 
-        if (!$fieldTemplate) {
-            //TODO: error message
-            return $this->id;
+            if (defined('YICMS_STRICT')) {
+                throw new EssencesException(
+                    "YICMS_STRICT_MODE:
+                Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId);
+            }
+
+            if (CommonModule::isUnderDev())
+                return 'ID = ' . $this->id . ' (DEV: Can`t fetch for FieldTemplate with ID = )' . $nameFormFieldId;
+
+            return 'ID = ' . $this->id;
         }
 
-        $name = trim((string)$this->getField($fieldTemplate->program_name));
+        $nameFormingField = $this->getField($fieldTemplate->program_name);
 
-        if (!$name) return $this->id;
+        if (!$nameFormingField->isTranslate()) {
+            if (CommonModule::isUnderDev())
+                return 'ID = ' . $this->id . ' (DEV: represent with empty name)';
 
-        return $name;
+            return 'ID = ' . $this->id . EssencesModule::t('app', ' (Represent has no name)');
+        }
+
+        if (CommonModule::isUnderDev())
+            return  'ID = ' . $this->id . ' ' .  $this->getField($fieldTemplate->program_name);
+
+        return (string)$this->getField($fieldTemplate->program_name);
     }
 
     //public function load()

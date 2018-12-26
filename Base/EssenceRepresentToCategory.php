@@ -91,6 +91,8 @@ class EssenceRepresentToCategory extends ActiveRecord implements SortOrderInterf
         foreach ($representsReps as $rr)
             $result[] = $rr['represent_id'];
 
+        Yii::error($representsReps);
+
         return self::$categoriesBuffer[$categoryId] = $result;
     }
 
