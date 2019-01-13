@@ -232,6 +232,8 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function save($runValidation = true, $attributeNames = null)
     {
+        if ($this->isNonexistent()) return false;
+
         if ($this->scenario == self::SCENARIO_CREATE) {
             $this->essence_id     = $this->essence->id;
             $this->category_order = $this->maxOrder();
@@ -253,6 +255,8 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getCategoriesForDropList()
     {
+        if ($this->isNonexistent()) return [];
+
         $list = [];
 
         $list[0] = EssencesModule::t('app', 'Root category');
@@ -295,6 +299,8 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function delete()
     {
+        if ($this->isNonexistent()) return false;
+
         if ($this->isChildren()) {
             foreach ($this->getChildren() as $children) {
 
@@ -354,8 +360,14 @@ class EssencesCategories extends AbstractTreeNode implements
      * @throws EssencesException
      * @throws \Exception
      */
-    public function name()
+    public function adminName()
     {
+        if ($this->isNonexistent()) {
+            if (CommonModule::isUnderDev()) return 'Try to output name of nonexistent category';
+
+            return '';
+        }
+
         $nameFormFieldId = $this->getEssence()->category_form_name_field;
 
         if (!$nameFormFieldId) {
@@ -398,12 +410,117 @@ class EssencesCategories extends AbstractTreeNode implements
     }
 
     /**
+     * Returns name of category
+     * @return string
+     * @throws EssencesException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function name()
+    {
+        if ($this->isNonexistent()) {
+            if (CommonModule::isUnderDev()) return 'Try to output name of nonexistent category';
+
+            return '';
+        }
+
+        $nameFormFieldId = $this->getEssence()->category_form_name_field;
+
+        if (!$nameFormFieldId) {
+
+            if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+                return 'ID = ' . $this->id . ' (DEV: category has no selected name forming field)';
+
+            return '';
+        }
+
+        if (is_null($fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId))) {
+            Yii::warning(
+                "Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId, __METHOD__);
+
+            if (defined('YICMS_STRICT')) {
+                throw new EssencesException(
+                    "YICMS_STRICT_MODE:
+                Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId);
+            }
+
+            if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+                return 'ID = ' . $this->id . ' (DEV: Can`t fetch for FieldTemplate with ID = )' . $nameFormFieldId;
+
+            return '';
+        }
+
+        $nameFormingField = $this->getField($fieldTemplate->program_name);
+
+        if (!$nameFormingField->isTranslate()) {
+            if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+                return 'ID = ' . $this->id . ' (DEV: category with empty name)';
+
+            if (CommonModule::isUnderAdmin() && defined('YICMS_ALERTS'))
+                return 'Category with empty name';
+
+            return '';
+        }
+
+        if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+            return  'ID = ' . $this->id . ' ' .  $this->getField($fieldTemplate->program_name);
+
+        return (string)$this->getField($fieldTemplate->program_name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isChildren()
+    {
+        if ($this->isNonexistent()) return false;
+
+        return parent::isChildren();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getChildren()
+    {
+        if ($this->isNonexistent()) return [];
+
+        return parent::getChildren();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isParent()
+    {
+        if ($this->isNonexistent()) return false;
+
+        return parent::isParent();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getParent()
+    {
+        return parent::getParent();
+    }
+
+    /**
      * @inheritdoc
      * @throws EssencesException
      */
     public function getNodeName(LanguagesDb $language = null)
     {
-        return static::name();
+        return static::adminName();
+    }
+
+    /**
+     * Returns true if category has represents
+     * @return bool
+     */
+    public function isRepresents()
+    {
+        return !!$this->countRepresents();
     }
 
     /**

@@ -25,6 +25,8 @@ abstract class AbstractTreeNode extends ActiveRecord
     private $level = null;
     /** @var null|array of node block in tree collection (only for buffer purposes) */
     private $nodeBlock = null;
+    /** @var null|self parent of this node */
+    private $parent = null;
 
     /**
      * Sets collection that keep this node
@@ -64,8 +66,74 @@ abstract class AbstractTreeNode extends ActiveRecord
     {
         $nodeBlock = $this->findNodeBlockInCollection();
 
-        if (isset($nodeBlock['children'])) return $nodeBlock['children'];
+        if (isset($nodeBlock['children'])) {
+            $result = [];
+
+            foreach ($nodeBlock['children'] as $node)
+                $result[] = $node['node'];
+
+            return $result;
+        }
+
         return [];
+    }
+
+    /**
+     * Return true, if node has parent (not top node)
+     * @return bool
+     */
+    public function isParent()
+    {
+        if (is_null($this->parent)) return false;
+
+        return true;
+    }
+
+    /**
+     * Sets parent node for this node
+     * @param AbstractTreeNode $parent
+     */
+    public function setParent(AbstractTreeNode $parent)
+    {
+        $this->parent = $parent;
+    }
+
+    /**
+     * Returns parent node of this node
+     * @return AbstractTreeNode|null
+     */
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * Return array of parents from this element to top
+     * @return array
+     * @throws EssencesException
+     */
+    public function getParentsToTop()
+    {
+        $currentParent = $this->getParent();
+
+        if (is_null($currentParent)) return [];
+
+        $parentsArray = [];
+
+        $overflowCounter = 0;
+
+        while(true) {
+            if ($overflowCounter++ > 100)
+                throw new EssencesException('Overflow of getParentsToTop method');
+
+            $parentsArray[$currentParent->id] = $currentParent;
+
+            if (!$currentParent->isParent()) return array_reverse($parentsArray, true);
+
+            $currentParent = $currentParent->getParent();
+        }
+
+        throw new EssencesException('Can`t reach this place 0_0');
     }
 
     /**
@@ -167,8 +235,6 @@ abstract class AbstractTreeNode extends ActiveRecord
 
         return false;
     }
-
-
 
     /**
      * Returns name of node for various lists

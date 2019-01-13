@@ -57,7 +57,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
      *    )
      */
     private $treeStructure = null;
-    /** @var null|array buffer of nodes fetched from db
+    /** @var null|AbstractTreeNode[] buffer of nodes fetched from db
      * used for buffered return of nodes by id from linear list
      * instead recursive calls from special tree structure
      */
@@ -82,16 +82,22 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
     /**
      * Return buffered AbstractTreeNode by ID
      * @param $id
-     * @return null|AbstractTreeNode
+     * @return AbstractTreeNode|null
+     * @throws \Exception
      */
     protected function getNodeById($id)
     {
+        /*
         if (is_null($this->treeStructure)) {
             if (isset($this->nodesBuffer[$id]))
                 return $this->nodesBuffer[$id];
+            
+            if ($node = $this->getTreeNode($id))
+                return $this->nodesBuffer[$id] = $node;
 
-            return $this->nodesBuffer[$id] = $this->getTreeNode($id);
+            return null;
         }
+        */
 
         if (is_null($this->nodesBuffer))
             $this->getTreeArray();
@@ -122,9 +128,14 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
 
         $parentNodes = [];
 
-        foreach ($nodes as $node) {
+        foreach ($this->nodesBuffer as $node) {
             $parentNodes[$node->parent_id][$node->id] = $node;
             $node->setCollection($this);
+
+            if ($node->parent_id == 0) continue;
+
+            if (array_key_exists($node->parent_id, $this->nodesBuffer))
+                $node->setParent($this->nodesBuffer[$node->parent_id]);
         }
 
         $arr = [];
@@ -184,6 +195,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
     /**
      * Return list of nodes by tree order
      * @return AbstractTreeNode[]
+     * @throws \Exception
      */
     protected function traversalByTreeOrder()
     {
@@ -227,6 +239,7 @@ abstract class AbstractTreeNodeCollection extends ActiveRecord
     /**
      * Only for debug purposes
      * @return array
+     * @throws \Exception
      */
     public function treeDebugForm()
     {

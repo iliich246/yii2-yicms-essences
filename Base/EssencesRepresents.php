@@ -218,18 +218,20 @@ class EssencesRepresents extends ActiveRecord implements
                 $this->categoriesBuffer[$category->id] = $category;
         }
 
-
-
         return $this->categoriesBuffer;
     }
 
     /**
      * Return one category of this represent
      * @return EssencesCategories
+     * @throws EssencesException
      */
     public function getCategory()
     {
-        if (!is_null($this->categoriesBuffer)) return current(reset($this->categoriesBuffer));
+        if (!is_null($this->categoriesBuffer)) {
+            reset($this->categoriesBuffer);
+            return current($this->categoriesBuffer);
+        }
 
         return current($this->getCategories());
     }
@@ -253,8 +255,6 @@ class EssencesRepresents extends ActiveRecord implements
     public function getCategoriesForDropList()
     {
         $list = [];
-
-        Yii::error('there');
 
         if ($this->scenario != self::SCENARIO_CREATE &&
             !EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))
@@ -286,8 +286,6 @@ class EssencesRepresents extends ActiveRecord implements
 
             $list[$category->id] .= $devString;
         }
-
-
 
         return $list;
     }
@@ -386,13 +384,19 @@ class EssencesRepresents extends ActiveRecord implements
     }
 
     /**
-     * Returns name of represent for lists
+     * Returns name of represent in admin part
      * @return string
      * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
-    public function name()
+    public function adminName()
     {
+        if ($this->isNonexistent()) {
+            if (CommonModule::isUnderDev()) return 'Try to output name of nonexistent category';
+
+            return '';
+        }
+
         $nameFormFieldId = $this->getEssence()->represent_form_name_field;
 
         if (!$nameFormFieldId) {
@@ -434,7 +438,62 @@ class EssencesRepresents extends ActiveRecord implements
         return (string)$this->getField($fieldTemplate->program_name);
     }
 
-    //public function load()
+    /**
+     * Returns name of represent
+     * @return string
+     * @throws EssencesException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     */
+    public function name()
+    {
+        if ($this->isNonexistent()) {
+            if (CommonModule::isUnderDev()) return 'Try to output name of nonexistent category';
+
+            return '';
+        }
+
+        $nameFormFieldId = $this->getEssence()->represent_form_name_field;
+
+        if (!$nameFormFieldId) {
+            if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+                return 'ID = ' . $this->id . ' (DEV: represent has no selected name forming field)';
+
+            return '';
+        }
+
+        if (is_null($fieldTemplate = FieldTemplate::getInstanceById($nameFormFieldId))) {
+            Yii::warning(
+                "Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId, __METHOD__);
+
+            if (defined('YICMS_STRICT')) {
+                throw new EssencesException(
+                    "YICMS_STRICT_MODE:
+                Can`t fetch for FieldTemplate with ID = " .  $nameFormFieldId);
+            }
+
+            if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+                return 'ID = ' . $this->id . ' (DEV: Can`t fetch for FieldTemplate with ID = )' . $nameFormFieldId;
+
+            return '';
+        }
+
+        $nameFormingField = $this->getField($fieldTemplate->program_name);
+
+        if (!$nameFormingField->isTranslate()) {
+            if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+                return 'ID = ' . $this->id . ' (DEV: represent with empty name)';
+
+            if (CommonModule::isUnderAdmin() && defined('YICMS_ALERTS'))
+                return 'Represent with empty name';
+
+            return '';
+        }
+
+        if (CommonModule::isUnderDev() && defined('YICMS_ALERTS'))
+            return  'ID = ' . $this->id . ' ' .  $this->getField($fieldTemplate->program_name);
+
+        return (string)$this->getField($fieldTemplate->program_name);
+    }
 
     /**
      * @inheritdoc
@@ -613,6 +672,7 @@ class EssencesRepresents extends ActiveRecord implements
      * Proxy method name() to magical __toString()
      * @return string
      * @throws EssencesException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
     public function __toString()
     {

@@ -3,6 +3,7 @@
 namespace Iliich246\YicmsEssences\Base;
 
 use Yii;
+use yii\base\Exception;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
@@ -313,6 +314,7 @@ class Essences extends AbstractTreeNodeCollection implements
      * @param $id
      * @return AbstractTreeNode|EssencesCategories|null
      * @throws EssencesException
+     * @throws \Exception
      */
     public function getCategoryById($id)
     {
@@ -338,7 +340,8 @@ class Essences extends AbstractTreeNodeCollection implements
         return $nonexistentCategory;
     }
 
-    /**Returns represent by id
+    /**
+     * Returns represent by id
      * @param $id
      * @return EssencesRepresents
      * @throws EssencesException
@@ -818,12 +821,31 @@ class Essences extends AbstractTreeNodeCollection implements
     }
 
     /**
-     *
+     * Return list of all categories
      * @return AbstractTreeNode[]|EssencesCategories[]
      */
     public function getCategories()
     {
+        if ($this->isNonexistent()) return [];
+
         return $this->traversalByTreeOrder();
+    }
+
+    /**
+     * Returns array of top categories
+     * @return AbstractTreeNode[]
+     */
+    public function getTopCategories()
+    {
+        if ($this->isNonexistent()) return [];
+
+        $result = [];
+
+        foreach ($this->getTreeArray() as $topNode) {
+            $result[] = $topNode['node'];
+        }
+
+        return $result;
     }
 
     /**
