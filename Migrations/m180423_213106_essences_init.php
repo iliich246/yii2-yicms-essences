@@ -140,6 +140,7 @@ class m180423_213106_essences_init extends Migration
          */
         $this->createTable('{{%essences_category_represent}}', [
             'id'              => $this->primaryKey(),
+            'essence_id'      => $this->integer(),
             'category_id'     => $this->integer(),
             'represent_id'    => $this->integer(),
             'represent_order' => $this->integer(),

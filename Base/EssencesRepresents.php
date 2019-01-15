@@ -502,8 +502,8 @@ class EssencesRepresents extends ActiveRecord implements
     public function save($runValidation = true, $attributeNames = null)
     {
         if ($this->scenario == self::SCENARIO_CREATE) {
-            $this->represent_order = $this->maxOrder();
             $this->essence_id      = $this->essence->id;
+            $this->represent_order = $this->maxOrder();
 
             if (!parent::save()) {
                 Yii::warning('Can`t save represent',__METHOD__);
@@ -513,11 +513,13 @@ class EssencesRepresents extends ActiveRecord implements
                 return false;
             }
 
-            if (!$this->getEssence()->is_multiple_categories) {
+            if (!$this->getEssence()->is_multiple_categories ||
+                $this->getEssence()->is_categories) {
 
                 $middle = new EssenceRepresentToCategory();
                 $middle->category_id     = $this->category;
                 $middle->represent_id    = $this->id;
+                $middle->essence_id      = $this->getEssence()->id;
                 $middle->represent_order =
                     EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id ,$this->category);
 
@@ -534,8 +536,9 @@ class EssencesRepresents extends ActiveRecord implements
 
                 if (!count($middleArray)) {
                     $middle = new EssenceRepresentToCategory();
-                    $middle->category_id  = $this->category;
-                    $middle->represent_id = $this->id;
+                    $middle->category_id     = $this->category;
+                    $middle->represent_id    = $this->id;
+                    $middle->essence_id      = $this->getEssence()->id;
                     $middle->represent_order =
                         EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id ,$this->category);
 
@@ -552,7 +555,8 @@ class EssencesRepresents extends ActiveRecord implements
 
                     if ($middle) {
                         if ($middle->category_id != $this->category) {
-                            $middle->category_id = $this->category;
+                            $middle->category_id     = $this->category;
+                            $middle->essence_id      = $this->getEssence()->id;
                             $middle->represent_order =
                                 EssenceRepresentToCategory::maxRepresentOrderInCategory($this->id ,$this->category);
 
@@ -995,7 +999,9 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function getOrderQuery()
     {
-        return self::find();
+        return self::find()->where([
+            'essence_id' => $this->essence_id,
+        ]);
     }
 
     /**

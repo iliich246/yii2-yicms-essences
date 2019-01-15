@@ -11,6 +11,7 @@ use Iliich246\YicmsCommon\Base\SortOrderInterface;
  * Class EssenceRepresentToCategory
  *
  * @property int $id
+ * @property int $essence_id
  * @property int $category_id
  * @property int $represent_id
  * @property int $represent_order
