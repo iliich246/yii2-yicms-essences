@@ -250,17 +250,17 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * Creates list of categories for create/update represent drop lists
-     * @throws EssencesException
+     * @param bool|true $needNoCategoryItem
+     * @return array
      */
-    public function getCategoriesForDropList()
+    public function getCategoriesForDropList($needNoCategoryItem = true)
     {
         $list = [];
 
-        if ($this->scenario != self::SCENARIO_CREATE &&
+        if ($needNoCategoryItem &&
+            $this->scenario != self::SCENARIO_CREATE &&
             !EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))
             $list[0] = EssencesModule::t('app', 'No category selected');
-
-
 
         foreach ($this->getEssence()->getCategories() as $category) {
             if ($this->scenario == self::SCENARIO_UPDATE &&
@@ -290,6 +290,25 @@ class EssencesRepresents extends ActiveRecord implements
         return $list;
     }
 
+    public function canAddCategory()
+    {
+        /*
+        if (!CommonModule::isUnderDev() && !$this->editable) return false;
+
+        $categoriesArray = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
+
+        if (count($this->getCategories()) <= count($categoriesArray))
+            return false;
+
+        if (!CommonModule::isUnderDev() &&
+            $this->getEssence()->max_categories != 0 &&
+            $this->getEssence()->max_categories < count($categoriesArray))
+            return false;
+        */
+
+        return true;
+    }
+
     /**
      * Add category to represent
      * @param EssencesCategories $category
@@ -304,7 +323,9 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (!$this->getEssence()->isMultipleCategories() && count($categoriesArray) > 0) return false;
 
-        if ($this->getEssence()->max_categories != 0 && $this->getEssence()->max_categories >= count($categoriesArray))
+        if (!CommonModule::isUnderDev() &&
+            $this->getEssence()->max_categories != 0 &&
+            $this->getEssence()->max_categories < count($categoriesArray))
             return false;
 
         if ($this->getEssence()->id != $category->getEssence()->id) return false;
@@ -324,6 +345,26 @@ class EssencesRepresents extends ActiveRecord implements
         }
 
         return false;
+    }
+
+    /**
+     * Return  true, if category can be deleted from represent
+     * @param EssencesCategories $category
+     * @return bool
+     */
+    public function canDeleteCategory(EssencesCategories $category)
+    {
+        if ($this->getEssence()->id != $category->getEssence()->id) return false;
+
+        $categoriesArray = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
+
+        if (CommonModule::isUnderDev()) return true;
+
+        if (!in_array($category->id, $categoriesArray)) return false;
+
+        if (count($categoriesArray) == 1) return false;
+
+        return true;
     }
 
     /**
