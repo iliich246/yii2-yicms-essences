@@ -21,7 +21,7 @@ use Iliich246\YicmsCommon\Languages\LanguagesDb;
 class EssencesNamesTranslatesDb extends ActiveRecord
 {
     /** @var array buffer of translates in view $buffer[<essence-id>][<language-id>] */
-    private static $buffer;
+    private static $buffer = [];
 
     /**
      * @inheritdoc
@@ -52,8 +52,12 @@ class EssencesNamesTranslatesDb extends ActiveRecord
      */
     public static function getTranslate($essenceId, $languageId)
     {
-        if (!isset(self::$buffer[$essenceId][$languageId]) &&
-            !is_null(self::$buffer[$essenceId][$languageId])) {
+        if (!isset(self::$buffer[$essenceId][$languageId])) {
+
+            if (array_key_exists($essenceId, self::$buffer))
+                if (array_key_exists($languageId ,self::$buffer[$essenceId]))
+                    return self::$buffer[$essenceId][$languageId];
+
             self::$buffer[$essenceId][$languageId] = self::find()->where([
                 'essence_id'         => $essenceId,
                 'common_language_id' => $languageId,
