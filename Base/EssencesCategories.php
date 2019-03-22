@@ -584,6 +584,14 @@ class EssencesCategories extends AbstractTreeNode implements
 
     /**
      * @inheritdoc
+     */
+    public function isField($name)
+    {
+        return $this->getFieldHandler()->isField($name);
+    }
+
+    /**
+     * @inheritdoc
      * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      */
@@ -666,6 +674,14 @@ class EssencesCategories extends AbstractTreeNode implements
     /**
      * @inheritdoc
      */
+    public function isFileBlock($name)
+    {
+        $this->getFileHandler()->isFileBlock($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getImagesHandler()
     {
         if (!$this->imageHandler)
@@ -680,6 +696,14 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getImageBlock($name)
     {
         return $this->getImagesHandler()->getImageBlock($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isImageBlock($name)
+    {
+        return $this->getImagesHandler()->isImageBlock($name);
     }
 
     /**
@@ -730,6 +754,14 @@ class EssencesCategories extends AbstractTreeNode implements
     public function getCondition($name)
     {
         return $this->getConditionsHandler()->getCondition($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCondition($name)
+    {
+        return $this->getConditionsHandler()->isCondition($name);
     }
 
     /**
