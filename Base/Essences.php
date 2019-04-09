@@ -6,6 +6,10 @@ use Yii;
 use yii\base\Exception;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
+use Iliich246\YicmsCommon\CommonModule;
+use Iliich246\YicmsCommon\Annotations\Annotator;
+use Iliich246\YicmsCommon\Annotations\AnnotateInterface;
+use Iliich246\YicmsCommon\Annotations\AnnotatorFileInterface;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
 use Iliich246\YicmsCommon\Base\NonexistentInterface;
@@ -51,7 +55,9 @@ use Iliich246\YicmsEssences\EssencesModule;
  */
 class Essences extends AbstractTreeNodeCollection implements
     SortOrderInterface,
-    NonexistentInterface
+    NonexistentInterface,
+    AnnotateInterface,
+    AnnotatorFileInterface
 {
     use SortOrderTrait;
 
@@ -78,6 +84,11 @@ class Essences extends AbstractTreeNodeCollection implements
     private $isNonexistent = false;
     /** @var string keeps name of nonexistent essence */
     private $nonexistentName;
+    /** @var bool state of annotation necessity */
+    private $needToAnnotate = true;
+    /** @var Annotator instance */
+    private $annotator = null;
+
 
     /**
      * @inheritdoc
@@ -1144,4 +1155,110 @@ class Essences extends AbstractTreeNodeCollection implements
     {
         $this->nonexistentName = $name;
     }
+
+    /**
+     * @inheritdoc
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     * @throws \ReflectionException
+     */
+    public function annotate()
+    {
+        $this->getAnnotator()->finish();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offAnnotation()
+    {
+        $this->needToAnnotate = false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function onAnnotation()
+    {
+        $this->needToAnnotate = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAnnotationActive()
+    {
+        return $this->needToAnnotate;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \ReflectionException
+     */
+    public function getAnnotator()
+    {
+        if (!is_null($this->annotator)) return $this->annotator;
+
+        $this->annotator = new Annotator();
+        $this->annotator->setAnnotatorFileObject($this);
+        $this->annotator->prepare();
+
+        return $this->annotator;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAnnotationFileName()
+    {
+        return ucfirst(mb_strtolower($this->program_name));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAnnotationFilePath()
+    {
+        $path = Yii::getAlias(CommonModule::getInstance()->yicmsLocation);
+        $path .= '/' . EssencesModule::getInstance()->getModuleName();
+        $path .= '/' . CommonModule::getInstance()->annotationsDirectory;
+
+        return $path;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExtendsUseClass()
+    {
+        return 'Iliich246\YicmsEssences\Base\Essences';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExtendsClassName()
+    {
+        return 'Essences';
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \ReflectionException
+     */
+    public static function getAnnotationTemplateFile()
+    {
+        $class = new \ReflectionClass(self::class);
+        return dirname($class->getFileName())  . '/annotations/essences.php';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getAnnotationFileNamespace()
+    {
+        return CommonModule::getInstance()->yicmsNamespace . '\\' .
+            EssencesModule::getInstance()->getModuleName() . '\\' .
+            CommonModule::getInstance()->annotationsDirectory;
+    }
+
 }

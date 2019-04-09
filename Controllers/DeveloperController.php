@@ -110,6 +110,7 @@ class DeveloperController extends Controller
             throw new NotFoundHttpException('Wrong essence ID');
 
         $essence->scenario = Essences::SCENARIO_UPDATE;
+        $essence->annotate();
 
         if ($essence->load(Yii::$app->request->post()) && $essence->validate()) {
 
