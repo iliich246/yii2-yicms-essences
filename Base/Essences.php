@@ -261,7 +261,7 @@ class Essences extends AbstractTreeNodeCollection implements
     /**
      * Returns instance of essence by her name
      * @param $programName
-     * @return array|Essences|null|ActiveRecord
+     * @return static|Essences|ActiveRecord
      * @throws EssencesException
      */
     public static function getByName($programName)
@@ -271,7 +271,7 @@ class Essences extends AbstractTreeNodeCollection implements
                 return $essence;
 
         /** @var self $essence */
-        $essence = self::find()
+        $essence = static::find()
             ->where(['program_name' => $programName])
             ->one();
 
@@ -299,7 +299,7 @@ class Essences extends AbstractTreeNodeCollection implements
      * @return Essences|null|static
      * @throws EssencesException
      */
-    public static function getInstance($id)
+    public static function getInstanceById($id)
     {
         if (isset(self::$essencesBuffer[$id]))
             return self::$essencesBuffer[$id];
@@ -833,7 +833,8 @@ class Essences extends AbstractTreeNodeCollection implements
 
     /**
      * Return list of all categories
-     * @return AbstractTreeNode[]|EssencesCategories[]
+     * @return array|AbstractTreeNode[]
+     * @throws \Exception
      */
     public function getCategories()
     {
@@ -1163,6 +1164,16 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function annotate()
     {
+        $categoryAnnotator = new EssencesCategories();
+        $categoryAnnotator->setEssence($this);
+        EssencesCategories::setParentFileAnnotator($this);
+        $categoryAnnotator->annotate();
+
+        $representAnnotator = new EssencesRepresents();
+        $representAnnotator->setEssence($this);
+        EssencesRepresents::setParentFileAnnotator($this);
+        $representAnnotator->annotate();
+
         $this->getAnnotator()->finish();
     }
 

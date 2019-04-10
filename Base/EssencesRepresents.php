@@ -6,6 +6,9 @@ use Yii;
 use yii\db\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use Iliich246\YicmsCommon\CommonModule;
+use Iliich246\YicmsCommon\Annotations\Annotator;
+use Iliich246\YicmsCommon\Annotations\AnnotateInterface;
+use Iliich246\YicmsCommon\Annotations\AnnotatorFileInterface;
 use Iliich246\YicmsCommon\Base\SortOrderTrait;
 use Iliich246\YicmsCommon\Base\FictiveInterface;
 use Iliich246\YicmsCommon\Base\SortOrderInterface;
@@ -65,7 +68,9 @@ class EssencesRepresents extends ActiveRecord implements
     ConditionsInterface,
     FictiveInterface,
     SortOrderInterface,
-    NonexistentInterface
+    NonexistentInterface,
+    AnnotateInterface,
+    AnnotatorFileInterface
 {
     use SortOrderTrait;
 
@@ -94,6 +99,12 @@ class EssencesRepresents extends ActiveRecord implements
     private $isNonexistent = false;
     /** @var string keeps name of nonexistent represent */
     private $nonexistentName;
+    /** @var bool state of annotation necessity */
+    private $needToAnnotate = true;
+    /** @var Annotator instance */
+    private $annotator = null;
+    /** @var AnnotatorFileInterface instance */
+    private static $parentFileAnnotator;
 
     /**
      * @inheritdoc
@@ -1171,5 +1182,116 @@ class EssencesRepresents extends ActiveRecord implements
     public function setNonexistentName($name)
     {
         $this->nonexistentName = $name;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \ReflectionException
+     */
+    public function annotate()
+    {
+        $this->getAnnotator()->finish();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offAnnotation()
+    {
+        $this->needToAnnotate = false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function onAnnotation()
+    {
+        $this->needToAnnotate = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isAnnotationActive()
+    {
+        return $this->needToAnnotate;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \ReflectionException
+     */
+    public function getAnnotator()
+    {
+        if (!is_null($this->annotator)) return $this->annotator;
+
+        $this->annotator = new Annotator();
+        $this->annotator->setAnnotatorFileObject($this);
+        $this->annotator->prepare();
+
+        return $this->annotator;
+    }
+
+    /**
+     * Sets parent file annotator
+     * @param AnnotatorFileInterface $fileAnnotator
+     */
+    public static function setParentFileAnnotator(AnnotatorFileInterface $fileAnnotator)
+    {
+        self::$parentFileAnnotator = $fileAnnotator;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAnnotationFileName()
+    {
+        return ucfirst(mb_strtolower($this->essence->program_name)) . 'Represent';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAnnotationFilePath()
+    {
+        $path = $this->essence->getAnnotationFilePath();
+        $path .= '/' . $this->getAnnotationFileName();
+
+        return $path;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExtendsUseClass()
+    {
+        return 'Iliich246\YicmsEssences\Base\EssencesRepresents';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExtendsClassName()
+    {
+        return 'EssencesRepresents';
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \ReflectionException
+     */
+    public static function getAnnotationTemplateFile()
+    {
+        $class = new \ReflectionClass(self::class);
+        return dirname($class->getFileName())  . '/annotations/essence-represents.php';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getAnnotationFileNamespace()
+    {
+        return self::$parentFileAnnotator->getAnnotationFileNamespace() . '\\'
+            . self::$parentFileAnnotator->getAnnotationFileName() . 'Represents';
     }
 }
