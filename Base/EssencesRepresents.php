@@ -1190,6 +1190,30 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function annotate()
     {
+        FieldTemplate::setParentFileAnnotator($this);
+
+        $this->getAnnotator()->addAnnotationArray(
+            FieldTemplate::getAnnotationsStringArray($this->getFieldTemplateReference())
+        );
+
+        FilesBlock::setParentFileAnnotator($this);
+
+        $this->getAnnotator()->addAnnotationArray(
+            FilesBlock::getAnnotationsStringArray($this->getFileTemplateReference())
+        );
+
+        ImagesBlock::setParentFileAnnotator($this);
+
+        $this->getAnnotator()->addAnnotationArray(
+            ImagesBlock::getAnnotationsStringArray($this->getImageTemplateReference())
+        );
+
+        ConditionTemplate::setParentFileAnnotator($this);
+
+        $this->getAnnotator()->addAnnotationArray(
+            ConditionTemplate::getAnnotationsStringArray($this->getConditionTemplateReference())
+        );
+
         $this->getAnnotator()->finish();
     }
 

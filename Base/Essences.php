@@ -1164,6 +1164,8 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function annotate()
     {
+        $this->getAnnotator()->finish();
+
         $categoryAnnotator = new EssencesCategories();
         $categoryAnnotator->setEssence($this);
         EssencesCategories::setParentFileAnnotator($this);
@@ -1173,8 +1175,6 @@ class Essences extends AbstractTreeNodeCollection implements
         $representAnnotator->setEssence($this);
         EssencesRepresents::setParentFileAnnotator($this);
         $representAnnotator->annotate();
-
-        $this->getAnnotator()->finish();
     }
 
     /**
