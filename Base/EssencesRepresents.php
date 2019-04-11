@@ -105,6 +105,25 @@ class EssencesRepresents extends ActiveRecord implements
     private $annotator = null;
     /** @var AnnotatorFileInterface instance */
     private static $parentFileAnnotator;
+    /** @var array of exception words for magical getter/setter */
+    protected static $annotationExceptionWords = [
+        'isNewRecord',
+        'scenario',
+        'essence',
+        'id',
+        'essence_id',
+        'represent_order',
+        'editable',
+        'visible',
+        'system_route',
+        'ruled_route',
+        'field_reference',
+        'file_reference',
+        'image_reference',
+        'condition_reference',
+        'created_at',
+        'updated_at'
+    ];
 
     /**
      * @inheritdoc
@@ -261,8 +280,10 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * Creates list of categories for create/update represent drop lists
-     * @param bool|true $needNoCategoryItem
+     * @param bool $needNoCategoryItem
      * @return array
+     * @throws EssencesException
+     * @throws \Exception
      */
     public function getCategoriesForDropList($needNoCategoryItem = true)
     {
@@ -362,6 +383,7 @@ class EssencesRepresents extends ActiveRecord implements
      * Return  true, if category can be deleted from represent
      * @param EssencesCategories $category
      * @return bool
+     * @throws EssencesException
      */
     public function canDeleteCategory(EssencesCategories $category)
     {
@@ -420,7 +442,7 @@ class EssencesRepresents extends ActiveRecord implements
     {
         if ($this->essenceInstance) return $this->essenceInstance;
 
-        $this->essenceInstance = Essences::getInstance($this->essence_id);
+        $this->essenceInstance = Essences::getInstanceById($this->essence_id);
 
         return $this->essenceInstance;
     }
@@ -733,6 +755,59 @@ class EssencesRepresents extends ActiveRecord implements
     public function __toString()
     {
         return (string)$this->name();
+    }
+
+    /**
+     * Magical get method for use object annotations
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        if (in_array($name, self::$annotationExceptionWords))
+            return parent::__get($name);
+
+        if (strpos($name, 'field_') === 0) {
+            if ($this->isField(substr($name, 6)))
+                return $this->getFieldHandler()->getField(substr($name, 6));
+
+            return parent::__get($name);
+        }
+
+        if (strpos($name, 'file_') === 0) {
+            if ($this->isFileBlock(substr($name, 5)))
+                return $this->getFileHandler()->getFileBlock(substr($name, 5));
+
+            return parent::__get($name);
+        }
+
+        if (strpos($name, 'image_') === 0) {
+            if ($this->isImageBlock(substr($name, 6)))
+                return $this->getImagesHandler()->getImageBlock(substr($name, 6));
+
+            return parent::__get($name);
+        }
+
+        if (strpos($name, 'condition_') === 0) {
+            if ($this->isCondition(substr($name, 10)))
+                return $this->getConditionsHandler()->getCondition(substr($name, 10));
+
+            return parent::__get($name);
+        }
+
+        if ($this->getFieldHandler()->isField($name))
+            return $this->getFieldHandler()->getField($name);
+
+        if ($this->getFileHandler()->isFileBlock($name))
+            return $this->getFileHandler()->getFileBlock($name);
+
+        if ($this->getImagesHandler()->isImageBlock($name))
+            return $this->getImagesHandler()->getImageBlock($name);
+
+        if ($this->getConditionsHandler()->isCondition($name))
+            return $this->getConditionsHandler()->getCondition($name);
+
+        return parent::__get($name);
     }
 
     /**
@@ -1186,6 +1261,8 @@ class EssencesRepresents extends ActiveRecord implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
      * @throws \ReflectionException
      */
     public function annotate()

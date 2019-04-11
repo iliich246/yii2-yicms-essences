@@ -89,7 +89,6 @@ class Essences extends AbstractTreeNodeCollection implements
     /** @var Annotator instance */
     private $annotator = null;
 
-
     /**
      * @inheritdoc
      */
@@ -420,6 +419,7 @@ class Essences extends AbstractTreeNodeCollection implements
      * Creates list of categories for filter represents drop list
      * @return array
      * @throws EssencesException
+     * @throws \Exception
      */
     public function getCategoriesForDropList()
     {
@@ -906,6 +906,7 @@ class Essences extends AbstractTreeNodeCollection implements
      * Returns list of categories for categories lists
      * @return array
      * @throws EssencesException
+     * @throws \Exception
      */
     public function getListForCategories()
     {
@@ -1109,6 +1110,19 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     protected function getTreeNodes()
     {
+        if (!$this->isAnnotationActive()) {
+
+            /** @var EssencesCategories[] $treeNodes */
+            $treeNodes = EssencesCategories::find()->where([
+                'essence_id' => $this->id,
+            ])->all();
+
+            foreach ($treeNodes as $treeNode)
+                $treeNode->offAnnotation();
+
+            return $treeNodes;
+        }
+
         return EssencesCategories::find()->where([
             'essence_id' => $this->id,
         ])->all();
@@ -1159,6 +1173,7 @@ class Essences extends AbstractTreeNodeCollection implements
 
     /**
      * @inheritdoc
+     * @throws EssencesException
      * @throws \Iliich246\YicmsCommon\Base\CommonException
      * @throws \ReflectionException
      */
