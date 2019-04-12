@@ -294,6 +294,7 @@ class EssencesRepresents extends ActiveRecord implements
             !EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id))
             $list[0] = EssencesModule::t('app', 'No category selected');
 
+        /** @var EssencesCategories $category */
         foreach ($this->getEssence()->getCategories() as $category) {
             if ($this->scenario == self::SCENARIO_UPDATE &&
                 $this->getEssence()->isMultipleCategories() &&
@@ -305,6 +306,8 @@ class EssencesRepresents extends ActiveRecord implements
                 !$this->getEssence()->isIntermediateCategories() &&
                 $category->isChildren())
                 continue;
+
+            $category->offAnnotation();
 
             $list[$category->id] = $category->getNodeName();
 
@@ -1393,6 +1396,6 @@ class EssencesRepresents extends ActiveRecord implements
     public static function getAnnotationFileNamespace()
     {
         return self::$parentFileAnnotator->getAnnotationFileNamespace() . '\\'
-            . self::$parentFileAnnotator->getAnnotationFileName() . 'Represents';
+            . self::$parentFileAnnotator->getAnnotationFileName() . 'Represent';
     }
 }

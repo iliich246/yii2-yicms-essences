@@ -397,7 +397,7 @@ class EssencesCategories extends AbstractTreeNode implements
      * @return mixed
      */
     public function __get($name)
-    {//return parent::__get($name);
+    {
         if (in_array($name, self::$annotationExceptionWords))
             return parent::__get($name);
 
@@ -1135,6 +1135,6 @@ class EssencesCategories extends AbstractTreeNode implements
     public static function getAnnotationFileNamespace()
     {
         return self::$parentFileAnnotator->getAnnotationFileNamespace() . '\\'
-            . self::$parentFileAnnotator->getAnnotationFileName() . 'Categories';
+            . self::$parentFileAnnotator->getAnnotationFileName() . 'Category';
     }
 }

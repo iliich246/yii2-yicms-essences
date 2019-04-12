@@ -397,11 +397,28 @@ class Essences extends AbstractTreeNodeCollection implements
 
         $this->isAllRepresentsFetched = true;
 
+        if (!$this->isAnnotationActive())
+            return $this->representsBuffer = EssencesRepresents::find()->where([
+            'essence_id' => $this->id
+                ])->orderBy(['represent_order' => SORT_ASC])
+                  ->indexBy('id')
+                  ->all();
+
+        /** @var EssencesRepresents $className */
+        $className = $this->representClassName();
+
+        if (class_exists($className))
+            return $this->representsBuffer = $className::find()->where([
+                'essence_id' => $this->id
+            ])->orderBy(['represent_order' => SORT_ASC])
+                ->indexBy('id')
+                ->all();
+
         return $this->representsBuffer = EssencesRepresents::find()->where([
             'essence_id' => $this->id
         ])->orderBy(['represent_order' => SORT_ASC])
-          ->indexBy('id')
-          ->all();
+            ->indexBy('id')
+            ->all();
     }
 
     /**
@@ -410,6 +427,20 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     public function getAllRepresentsQuery()
     {
+        if (!$this->isAnnotationActive())
+            return EssencesRepresents::find()->where([
+                'essence_id' => $this->id
+            ]);
+
+        /** @var EssencesRepresents $className */
+        $className = $this->representClassName();
+
+        if (class_exists($className)) {
+            return $className::find()->where([
+                'essence_id' => $this->id
+            ]);
+        }
+
         return EssencesRepresents::find()->where([
             'essence_id' => $this->id
         ]);
@@ -1123,6 +1154,15 @@ class Essences extends AbstractTreeNodeCollection implements
             return $treeNodes;
         }
 
+        /** @var EssencesCategories $className */
+        $className = $this->categoryClassName();
+
+        if (class_exists($className)) {
+            return $className::find()->where([
+                'essence_id' => $this->id,
+            ])->all();
+        }
+
         return EssencesCategories::find()->where([
             'essence_id' => $this->id,
         ])->all();
@@ -1133,10 +1173,50 @@ class Essences extends AbstractTreeNodeCollection implements
      */
     protected function getTreeNode($id)
     {
+        if (!$this->isAnnotationActive()) {
+
+            return EssencesCategories::find()->where([
+                'id'         => $id,
+                'essence_id' => $this->id,
+            ])->one();
+        }
+
+        /** @var EssencesCategories $className */
+        $className = $this->categoryClassName();
+
+        if (class_exists($className)) {
+            return $className::find()->where([
+                'id'         => $id,
+                'essence_id' => $this->id,
+            ])->all();
+        }
+
         return EssencesCategories::find()->where([
             'id'         => $id,
             'essence_id' => $this->id,
         ])->one();
+    }
+
+    /**
+     * Return name of annotated category class for this essence
+     * @return string
+     */
+    private function categoryClassName()
+    {
+        return $this->getAnnotationFileNamespace() . '\\' .
+               $this->getAnnotationFileName() . 'Category' . '\\' .
+               $this->getAnnotationFileName() . 'Category';
+    }
+
+    /**
+     * Return name of annotated represent class for this essence
+     * @return string
+     */
+    private function representClassName()
+    {
+        return $this->getAnnotationFileNamespace() . '\\' .
+               $this->getAnnotationFileName() . 'Represent' . '\\' .
+               $this->getAnnotationFileName() . 'Represent';
     }
 
     /**
