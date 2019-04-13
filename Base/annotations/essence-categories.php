@@ -28,12 +28,6 @@ use <?= $annotator->getExtendsUseClass() ?>;
 class <?= $annotator->getClassName() ?> extends <?= $annotator->getExtendsClassName() ?>
 
 {
-    /**
-    * @return self instance .
-    * @throws \Iliich246\YicmsEssences\Base\EssencesException
-    */
-    public static function getInstance()
-    {
-        return self::getByName('<?= $essenceCategoryEssence->getEssence()->program_name ?>');
-    }
+    /** @var AnnotatorFileInterface instance */
+    private static $parentFileAnnotator;
 }

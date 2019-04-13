@@ -1081,7 +1081,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public static function setParentFileAnnotator(AnnotatorFileInterface $fileAnnotator)
     {
-        self::$parentFileAnnotator = $fileAnnotator;
+        static::$parentFileAnnotator = $fileAnnotator;
     }
 
     /**
@@ -1134,7 +1134,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public static function getAnnotationFileNamespace()
     {
-        return self::$parentFileAnnotator->getAnnotationFileNamespace() . '\\'
-            . self::$parentFileAnnotator->getAnnotationFileName() . 'Category';
+        return static::$parentFileAnnotator->getAnnotationFileNamespace() . '\\'
+            . static::$parentFileAnnotator->getAnnotationFileName() . 'Category';
     }
 }

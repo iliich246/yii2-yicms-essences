@@ -336,7 +336,7 @@ class Essences extends AbstractTreeNodeCollection implements
         }
 
         if ($node = $this->getNodeById($id))
-            return $node;
+             return $node;
 
         Yii::error("Сan not find category with id " . $id, __METHOD__);
 
@@ -368,8 +368,20 @@ class Essences extends AbstractTreeNodeCollection implements
         if (isset($this->representsBuffer[$id]))
             return $this->representsBuffer[$id];
 
-        if ($this->representsBuffer[$id] = EssencesRepresents::findOne($id))
-            return $this->representsBuffer[$id];
+        if (!$this->isAnnotationActive())
+            if ($this->representsBuffer[$id] = EssencesRepresents::findOne($id))
+                return $this->representsBuffer[$id];
+
+        /** @var EssencesRepresents $className */
+        $className = $this->representClassName();
+
+        if (class_exists($className)) {
+            if ($this->representsBuffer[$id] = $className::findOne($id))
+                return $this->representsBuffer[$id];
+        } else {
+            if ($this->representsBuffer[$id] = EssencesRepresents::findOne($id))
+                return $this->representsBuffer[$id];
+        }
 
         Yii::error("Сan not find represent with id " . $id, __METHOD__);
 
@@ -1158,6 +1170,10 @@ class Essences extends AbstractTreeNodeCollection implements
         $className = $this->categoryClassName();
 
         if (class_exists($className)) {
+
+            $className::setParentFileAnnotator($this);
+
+            /** @var EssencesCategories[] $categories */
             return $className::find()->where([
                 'essence_id' => $this->id,
             ])->all();
@@ -1201,7 +1217,7 @@ class Essences extends AbstractTreeNodeCollection implements
      * Return name of annotated category class for this essence
      * @return string
      */
-    private function categoryClassName()
+    public function categoryClassName()
     {
         return $this->getAnnotationFileNamespace() . '\\' .
                $this->getAnnotationFileName() . 'Category' . '\\' .
@@ -1212,7 +1228,7 @@ class Essences extends AbstractTreeNodeCollection implements
      * Return name of annotated represent class for this essence
      * @return string
      */
-    private function representClassName()
+    public function representClassName()
     {
         return $this->getAnnotationFileNamespace() . '\\' .
                $this->getAnnotationFileName() . 'Represent' . '\\' .
