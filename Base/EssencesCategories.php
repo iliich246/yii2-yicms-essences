@@ -106,6 +106,7 @@ class EssencesCategories extends AbstractTreeNode implements
         'oldAttributes',
         'scenario',
         'essence',
+        'represents',
         'id',
         'essence_id',
         'parent_id',
@@ -410,14 +411,14 @@ class EssencesCategories extends AbstractTreeNode implements
 
         if (strpos($name, 'file_') === 0) {
             if ($this->isFileBlock(substr($name, 5)))
-                return $this->getFileHandler()->getFileBlock(substr($name, 5));
+                return $this->getFileHandler()->getFileBlock(substr($name, 5), $this->id);
 
             return parent::__get($name);
         }
 
         if (strpos($name, 'image_') === 0) {
             if ($this->isImageBlock(substr($name, 6)))
-                return $this->getImagesHandler()->getImageBlock(substr($name, 6));
+                return $this->getImagesHandler()->getImageBlock(substr($name, 6), $this->id);
 
             return parent::__get($name);
         }
@@ -433,10 +434,10 @@ class EssencesCategories extends AbstractTreeNode implements
             return $this->getFieldHandler()->getField($name);
 
         if ($this->getFileHandler()->isFileBlock($name))
-            return $this->getFileHandler()->getFileBlock($name);
+            return $this->getFileHandler()->getFileBlock($name, $this->id);
 
         if ($this->getImagesHandler()->isImageBlock($name))
-            return $this->getImagesHandler()->getImageBlock($name);
+            return $this->getImagesHandler()->getImageBlock($name, $this->id);
 
         if ($this->getConditionsHandler()->isCondition($name))
             return $this->getConditionsHandler()->getCondition($name);
@@ -615,7 +616,9 @@ class EssencesCategories extends AbstractTreeNode implements
     }
 
     /**
-     * @return EssencesRepresents[]
+     * Returns all represent for this category
+     * @return array|\yii\db\ActiveRecord[]
+     * @throws EssencesException
      */
     public function getRepresents()
     {
@@ -626,13 +629,43 @@ class EssencesCategories extends AbstractTreeNode implements
      * Return ActiveQuery for find all represents for this category
      * @param int $sort
      * @return ActiveQuery
+     * @throws EssencesException
      */
     public function getRepresentsQuery($sort = SORT_ASC)
     {
-        return  EssencesRepresents::find()
+        if (!$this->isAnnotationActive()) {
+            return EssencesRepresents::find()
+                ->leftJoin('{{%essences_category_represent}}', '{{%essences_category_represent}}.`represent_id` = {{%essences_represents}}.`id`')
+                ->where(['{{%essences_category_represent}}.category_id' => $this->id])
+                ->orderBy(['{{%essences_category_represent}}.represent_order' => $sort]);
+        }
+
+        /** @var EssencesRepresents $className */
+        $className = $this->representClassName();
+
+        if (class_exists($className)) {
+            return $className::find()
+                ->leftJoin('{{%essences_category_represent}}', '{{%essences_category_represent}}.`represent_id` = {{%essences_represents}}.`id`')
+                ->where(['{{%essences_category_represent}}.category_id' => $this->id])
+                ->orderBy(['{{%essences_category_represent}}.represent_order' => $sort]);
+        }
+
+        return EssencesRepresents::find()
             ->leftJoin('{{%essences_category_represent}}', '{{%essences_category_represent}}.`represent_id` = {{%essences_represents}}.`id`')
             ->where(['{{%essences_category_represent}}.category_id' => $this->id])
             ->orderBy(['{{%essences_category_represent}}.represent_order' => $sort]);
+    }
+
+    /**
+     * Return name of annotated represent class for this essence
+     * @return string
+     * @throws EssencesException
+     */
+    public function representClassName()
+    {
+        return $this->getEssence()->getAnnotationFileNamespace() . '\\' .
+               $this->getEssence()->getAnnotationFileName() . 'Represent' . '\\' .
+               $this->getEssence()->getAnnotationFileName() . 'Represent';
     }
 
     /**
@@ -759,7 +792,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getFileBlock($name)
     {
-        return $this->getFileHandler()->getFileBlock($name);
+        return $this->getFileHandler()->getFileBlock($name, $this->id);
     }
 
     /**
@@ -786,7 +819,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getImageBlock($name)
     {
-        return $this->getImagesHandler()->getImageBlock($name);
+        return $this->getImagesHandler()->getImageBlock($name, $this->id);
     }
 
     /**
@@ -794,7 +827,7 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function isImageBlock($name)
     {
-        return $this->getImagesHandler()->isImageBlock($name);
+        return $this->getImagesHandler()->isImageBlock($name, $this->id);
     }
 
     /**
