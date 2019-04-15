@@ -622,6 +622,18 @@ class EssencesCategories extends AbstractTreeNode implements
      */
     public function getRepresents()
     {
+        if (!$this->isAnnotationActive())
+            return $this->getRepresentsQuery()->all();
+
+        /** @var EssencesRepresents $className */
+        $className = $this->representClassName();
+
+        if (class_exists($className)) {
+            $className::setParentFileAnnotator($this);
+        } else {
+            EssencesRepresents::setParentFileAnnotator($this);
+        }
+        /** @var EssencesRepresents[] $represents */
         return $this->getRepresentsQuery()->all();
     }
 
@@ -644,11 +656,15 @@ class EssencesCategories extends AbstractTreeNode implements
         $className = $this->representClassName();
 
         if (class_exists($className)) {
+            $className::setParentFileAnnotator($this);
+
             return $className::find()
                 ->leftJoin('{{%essences_category_represent}}', '{{%essences_category_represent}}.`represent_id` = {{%essences_represents}}.`id`')
                 ->where(['{{%essences_category_represent}}.category_id' => $this->id])
                 ->orderBy(['{{%essences_category_represent}}.represent_order' => $sort]);
         }
+
+        EssencesRepresents::setParentFileAnnotator($this);
 
         return EssencesRepresents::find()
             ->leftJoin('{{%essences_category_represent}}', '{{%essences_category_represent}}.`represent_id` = {{%essences_represents}}.`id`')

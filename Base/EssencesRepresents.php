@@ -779,14 +779,14 @@ class EssencesRepresents extends ActiveRecord implements
 
         if (strpos($name, 'file_') === 0) {
             if ($this->isFileBlock(substr($name, 5)))
-                return $this->getFileHandler()->getFileBlock(substr($name, 5));
+                return $this->getFileHandler()->getFileBlock(substr($name, 5), $this->id);
 
             return parent::__get($name);
         }
 
         if (strpos($name, 'image_') === 0) {
             if ($this->isImageBlock(substr($name, 6)))
-                return $this->getImagesHandler()->getImageBlock(substr($name, 6));
+                return $this->getImagesHandler()->getImageBlock(substr($name, 6), $this->id);
 
             return parent::__get($name);
         }
@@ -802,10 +802,10 @@ class EssencesRepresents extends ActiveRecord implements
             return $this->getFieldHandler()->getField($name);
 
         if ($this->getFileHandler()->isFileBlock($name))
-            return $this->getFileHandler()->getFileBlock($name);
+            return $this->getFileHandler()->getFileBlock($name, $this->id);
 
         if ($this->getImagesHandler()->isImageBlock($name))
-            return $this->getImagesHandler()->getImageBlock($name);
+            return $this->getImagesHandler()->getImageBlock($name, $this->id);
 
         if ($this->getConditionsHandler()->isCondition($name))
             return $this->getConditionsHandler()->getCondition($name);
@@ -966,7 +966,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function getFileBlock($name)
     {
-        return $this->getFileHandler()->getFileBlock($name);
+        return $this->getFileHandler()->getFileBlock($name, $this->id);
     }
 
     /**
@@ -974,7 +974,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function isFileBlock($name)
     {
-        $this->getFileHandler()->isFileBlock($name);
+        $this->getFileHandler()->isFileBlock($name, $this->id);
     }
 
     /**
@@ -993,7 +993,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function getImageBlock($name)
     {
-        return $this->getImagesHandler()->getImageBlock($name);
+        return $this->getImagesHandler()->getImageBlock($name, $this->id);
     }
 
     /**
@@ -1001,7 +1001,7 @@ class EssencesRepresents extends ActiveRecord implements
      */
     public function isImageBlock($name)
     {
-        return $this->getImagesHandler()->isImageBlock($name);
+        return $this->getImagesHandler()->isImageBlock($name, $this->id);
     }
 
     /**

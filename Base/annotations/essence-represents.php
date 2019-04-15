@@ -29,5 +29,5 @@ class <?= $annotator->getClassName() ?> extends <?= $annotator->getExtendsClassN
 
 {
     /** @var AnnotatorFileInterface instance */
-    private static $parentFileAnnotator;
+    protected static $parentFileAnnotator;
 }

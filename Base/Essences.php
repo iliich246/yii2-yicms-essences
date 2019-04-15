@@ -376,10 +376,13 @@ class Essences extends AbstractTreeNodeCollection implements
         $className = $this->representClassName();
 
         if (class_exists($className)) {
-            if ($this->representsBuffer[$id] = $className::findOne($id))
+            if ($this->representsBuffer[$id] = $className::findOne($id)) {
+                $className::setParentFileAnnotator($this);
                 return $this->representsBuffer[$id];
+            }
         } else {
             if ($this->representsBuffer[$id] = EssencesRepresents::findOne($id))
+                EssencesRepresents::setParentFileAnnotator($this);
                 return $this->representsBuffer[$id];
         }
 
@@ -1382,5 +1385,4 @@ class Essences extends AbstractTreeNodeCollection implements
             EssencesModule::getInstance()->getModuleName() . '\\' .
             CommonModule::getInstance()->annotationsDirectory;
     }
-
 }
