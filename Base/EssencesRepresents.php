@@ -770,6 +770,9 @@ class EssencesRepresents extends ActiveRecord implements
         if (in_array($name, self::$annotationExceptionWords))
             return parent::__get($name);
 
+        if ($this->scenario === self::SCENARIO_CREATE)
+            return parent::__get($name);
+
         if (strpos($name, 'field_') === 0) {
             if ($this->isField(substr($name, 6)))
                 return $this->getFieldHandler()->getField(substr($name, 6));
