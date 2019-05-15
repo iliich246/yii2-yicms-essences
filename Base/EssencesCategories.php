@@ -103,6 +103,7 @@ class EssencesCategories extends AbstractTreeNode implements
     /** @var array of exception words for magical getter/setter */
     protected static $annotationExceptionWords = [
         'isNewRecord',
+        'dirtyAttributes',
         'oldAttributes',
         'scenario',
         'essence',

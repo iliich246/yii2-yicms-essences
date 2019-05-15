@@ -99,7 +99,10 @@ class DeveloperController extends Controller
      * Updates essence
      * @param $id
      * @return string
+     * @throws EssencesException
      * @throws NotFoundHttpException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     * @throws \ReflectionException
      */
     public function actionUpdateEssence($id)
     {
@@ -184,11 +187,13 @@ class DeveloperController extends Controller
     /**
      * Action for delete essence
      * @param $id
-     * @param bool|false $deletePass
+     * @param bool $deletePass
      * @return \yii\web\Response
      * @throws BadRequestHttpException
      * @throws EssencesException
      * @throws NotFoundHttpException
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
     public function actionDeleteEssence($id, $deletePass = false)
     {
@@ -293,6 +298,8 @@ class DeveloperController extends Controller
                 //TODO: bootbox error
             }
 
+            $essence->annotate();
+
             return FieldsDevModalWidget::widget([
                 'devFieldGroup' => $devFieldGroup,
                 'dataSaved'     => true,
@@ -309,6 +316,8 @@ class DeveloperController extends Controller
             if (!$devFilesGroup->save()) {
                 //TODO: bootbox error
             }
+
+            $essence->annotate();
 
             return FilesDevModalWidget::widget([
                 'devFilesGroup' => $devFilesGroup,
@@ -327,6 +336,8 @@ class DeveloperController extends Controller
                 //TODO: bootbox error
             }
 
+            $essence->annotate();
+
             return ImagesDevModalWidget::widget([
                 'devImagesGroup' => $devImagesGroup,
                 'dataSaved'      => true,
@@ -343,6 +354,8 @@ class DeveloperController extends Controller
             if (!$devConditionsGroup->save()) {
                 //TODO: bootbox error
             }
+
+            $essence->annotate();
 
             return ConditionsDevModalWidget::widget([
                 'devConditionsGroup' => $devConditionsGroup,
@@ -413,6 +426,8 @@ class DeveloperController extends Controller
                 //TODO: bootbox error
             }
 
+            $essence->annotate();
+
             return FieldsDevModalWidget::widget([
                 'devFieldGroup' => $devFieldGroup,
                 'dataSaved' => true,
@@ -429,6 +444,8 @@ class DeveloperController extends Controller
             if (!$devFilesGroup->save()) {
                 //TODO: bootbox error
             }
+
+            $essence->annotate();
 
             return FilesDevModalWidget::widget([
                 'devFilesGroup' => $devFilesGroup,
@@ -447,6 +464,8 @@ class DeveloperController extends Controller
                 //TODO: bootbox error
             }
 
+            $essence->annotate();
+
             return ImagesDevModalWidget::widget([
                 'devImagesGroup' => $devImagesGroup,
                 'dataSaved' => true,
@@ -463,6 +482,8 @@ class DeveloperController extends Controller
             if (!$devConditionsGroup->save()) {
                 //TODO: bootbox error
             }
+
+            $essence->annotate();
 
             return ConditionsDevModalWidget::widget([
                 'devConditionsGroup' => $devConditionsGroup,
