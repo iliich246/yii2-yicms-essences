@@ -422,12 +422,17 @@ class Essences extends AbstractTreeNodeCollection implements
         /** @var EssencesRepresents $className */
         $className = $this->representClassName();
 
-        if (class_exists($className))
+        if (class_exists($className)) {
+            $className::setParentFileAnnotator($this);
+
             return $this->representsBuffer = $className::find()->where([
                 'essence_id' => $this->id
             ])->orderBy(['represent_order' => SORT_ASC])
                 ->indexBy('id')
                 ->all();
+        }
+
+        EssencesRepresents::setParentFileAnnotator($this);
 
         return $this->representsBuffer = EssencesRepresents::find()->where([
             'essence_id' => $this->id
