@@ -53,6 +53,14 @@ class EssencesModule extends AbstractConfigurableModule implements YicmsModuleIn
     /**
      * @inherited
      */
+    public function getModuleDir()
+    {
+        return __DIR__;
+    }
+
+    /**
+     * @inherited
+     */
     public static function getModuleName()
     {
         return 'Essences';

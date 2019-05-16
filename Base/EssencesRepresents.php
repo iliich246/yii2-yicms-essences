@@ -337,11 +337,12 @@ class EssencesRepresents extends ActiveRecord implements
 
         $categoriesArray = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
 
-        if (!$this->getEssence()->isMultipleCategories() && count($categoriesArray) > 0) return false;
+        if (!$this->getEssence()->isMultipleCategories() &&
+            count($categoriesArray) > 0 &&
+            !CommonModule::isUnderDev()) return false;
 
-        if ($this->getEssence()->max_categories <= count($categoriesArray)) return false;
-
-        Yii::error([$this->getEssence()->max_categories, count($categoriesArray), (int)$this->getEssence()->max_categories >= count($categoriesArray)]);
+        if ($this->getEssence()->max_categories <= count($categoriesArray) &&
+        !CommonModule::isUnderDev()) return false;
 
         return true;
     }
@@ -358,14 +359,14 @@ class EssencesRepresents extends ActiveRecord implements
 
         $categoriesArray = EssenceRepresentToCategory::getCategoriesArrayForRepresent($this->id);
 
-        if (!$this->getEssence()->isMultipleCategories() && count($categoriesArray) > 0) return false;
+        if (!$this->getEssence()->isMultipleCategories() && count($categoriesArray) > 0 && !CommonModule::isUnderDev()) return false;
 
-        if ((int)$this->getEssence()->max_categories <= count($categoriesArray)) return false;
+        if ((int)$this->getEssence()->max_categories <= count($categoriesArray) && !CommonModule::isUnderDev()) return false;
 
-        if (!CommonModule::isUnderDev() &&
-            $this->getEssence()->max_categories != 0 &&
-            $this->getEssence()->max_categories < count($categoriesArray))
-            return false;
+//        if (!CommonModule::isUnderDev() &&
+//            $this->getEssence()->max_categories != 0 &&
+//            $this->getEssence()->max_categories < count($categoriesArray))
+//            return false;
 
         if ($this->getEssence()->id != $category->getEssence()->id) return false;
 
