@@ -3,6 +3,8 @@
 namespace Iliich246\YicmsEssences;
 
 use Yii;
+use yii\base\BootstrapInterface;
+use Iliich246\YicmsCommon\Base\Generator;
 use Iliich246\YicmsCommon\Base\YicmsModuleInterface;
 use Iliich246\YicmsCommon\Base\AbstractConfigurableModule;
 
@@ -11,7 +13,9 @@ use Iliich246\YicmsCommon\Base\AbstractConfigurableModule;
  *
  * @author iliich246 <iliich246@gmail.com>
  */
-class EssencesModule extends AbstractConfigurableModule implements YicmsModuleInterface
+class EssencesModule extends AbstractConfigurableModule implements
+    BootstrapInterface,
+    YicmsModuleInterface
 {
     /** @inheritdoc */
     public $controllerMap = [
@@ -26,6 +30,15 @@ class EssencesModule extends AbstractConfigurableModule implements YicmsModuleIn
         //TODO: makes correct build of controller map via common->$yicmsLocation
         $this->controllerMap['admin'] = 'app\yicms\Essences\Controllers\AdminController';
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function bootstrap($app)
+    {
+        $generator = new Generator($this);
+        $generator->generate();
     }
 
     /**
@@ -56,6 +69,14 @@ class EssencesModule extends AbstractConfigurableModule implements YicmsModuleIn
     public function getModuleDir()
     {
         return __DIR__;
+    }
+
+    /**
+     * @inherited
+     */
+    public function isNeedGenerate()
+    {
+        return false;
     }
 
     /**
