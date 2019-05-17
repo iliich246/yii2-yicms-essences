@@ -40,10 +40,12 @@ class AdminController extends Controller
     public function behaviors()
     {
         return [
-//            'root' => [
-//                'class' => AdminFilter::className(),
-//                'except' => ['login-as-root'],
-//            ],
+            'admin' => [
+                'class' => AdminFilter::class,
+                'redirect' => function() {
+                    return $this->redirect(Url::toRoute('/common/admin/login'));
+                }
+            ],
         ];
     }
 

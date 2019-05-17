@@ -9,7 +9,6 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\BadRequestHttpException;
 use Iliich246\YicmsCommon\Base\DevFilter;
-use Iliich246\YicmsCommon\Base\CommonUser;
 use Iliich246\YicmsCommon\Languages\Language;
 use Iliich246\YicmsCommon\Base\CommonHashForm;
 use Iliich246\YicmsEssences\Base\Essences;
@@ -27,7 +26,6 @@ use Iliich246\YicmsCommon\Conditions\ConditionTemplate;
 use Iliich246\YicmsCommon\Conditions\DevConditionsGroup;
 use Iliich246\YicmsCommon\Conditions\ConditionsDevModalWidget;
 use Iliich246\YicmsEssences\Base\EssenceDevTranslateForm;
-
 
 /**
  * Class DeveloperController
@@ -49,10 +47,12 @@ class DeveloperController extends Controller
     public function behaviors()
     {
         return [
-//            'root' => [
-//                'class' => DevFilter::className(),
-//                'except' => ['login-as-root'],
-//            ],
+            'dev' => [
+                'class' => DevFilter::class,
+                'redirect' => function() {
+                    return $this->redirect(Url::home());
+                }
+            ],
         ];
     }
 
