@@ -2,6 +2,7 @@
 
 namespace Iliich246\YicmsEssences\Controllers;
 
+use Iliich246\YicmsEssences\Base\EssencesConfigDb;
 use Yii;
 use yii\base\Model;
 use yii\helpers\Url;
@@ -524,6 +525,31 @@ class DeveloperController extends Controller
             'imagesBlocks'               => $imagesBlocks,
             'devConditionsGroup'         => $devConditionsGroup,
             'conditionTemplates'         => $conditionTemplates
+        ]);
+    }
+
+    /**
+     * Maintenance action for essence module
+     * @return string
+     * @throws EssencesException
+     */
+    public function actionMaintenance()
+    {
+        $config = EssencesConfigDb::getInstance();
+
+        if ($config->load(Yii::$app->request->post()) && $config->validate()) {
+            if ($config->save()) {
+                return $this->render('/developer/maintenance', [
+                    'config'  => $config,
+                    'success' => true,
+                ]);
+            }
+
+            throw new EssencesException('Can`t save data in database');
+        }
+
+        return $this->render('/developer/maintenance', [
+            'config' => $config
         ]);
     }
 }

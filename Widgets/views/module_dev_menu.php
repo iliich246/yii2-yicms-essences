@@ -22,6 +22,10 @@ use yii\helpers\Url;
             href="<?= Url::toRoute('/essences/dev/create') ?>">
             Create/update essence
         </a>
+        <a <?php if ($widget->route == 'essences/dev/maintenance'): ?> class="active" <?php endif; ?>
+            href="<?= Url::toRoute('/essences/dev/maintenance') ?>">
+            Maintenance
+        </a>
     </div>
 </div>
 <hr>

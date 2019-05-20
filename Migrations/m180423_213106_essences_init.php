@@ -48,11 +48,15 @@ class m180423_213106_essences_init extends Migration
          * essences_config table
          */
         $this->createTable('{{%essences_config}}', [
-            'id' => $this->primaryKey(),
+            'id'               => $this->primaryKey(),
+            'is_generated'     => $this->boolean(),
+            'strongGenerating' => $this->boolean(),
         ]);
 
         $this->insert('{{%essences_config}}', [
-            'id' => 1,
+            'id'               => 1,
+            'isGenerated'      => false,
+            'strongGenerating' => false
         ]);
 
         /**
