@@ -39,6 +39,13 @@ class EssencesModule extends AbstractConfigurableModule implements
     {
         //TODO: makes correct build of controller map via common->$yicmsLocation
         $this->controllerMap['admin'] = 'app\yicms\Essences\Controllers\AdminController';
+
+        Yii::setAlias('@yicms-essences', Yii::getAlias('@vendor') .
+            DIRECTORY_SEPARATOR .
+            'iliich246' .
+            DIRECTORY_SEPARATOR .
+            'yii2-yicms-essences');
+
         parent::init();
     }
 
