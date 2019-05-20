@@ -16,7 +16,13 @@
     },
     "autoload": {
         "psr-4": {
-            "iliich246\\yicms_essences\\": ""
+            "Iliich246\\YicmsEssences\\": ""
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://packagist.org"
+        }
+    ]
 }
