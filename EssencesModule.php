@@ -2,6 +2,7 @@
 
 namespace Iliich246\YicmsEssences;
 
+use Iliich246\YicmsEssences\Base\EssencesConfigDb;
 use Yii;
 use yii\base\BootstrapInterface;
 use Iliich246\YicmsCommon\Base\Generator;
@@ -40,11 +41,11 @@ class EssencesModule extends AbstractConfigurableModule implements
         //TODO: makes correct build of controller map via common->$yicmsLocation
         $this->controllerMap['admin'] = 'app\yicms\Essences\Controllers\AdminController';
 
-        Yii::setAlias('@yicms-essences', Yii::getAlias('@vendor') .
-            DIRECTORY_SEPARATOR .
-            'iliich246' .
-            DIRECTORY_SEPARATOR .
-            'yii2-yicms-essences');
+//        Yii::setAlias('@yicms-essences', Yii::getAlias('@vendor') .
+//            DIRECTORY_SEPARATOR .
+//            'iliich246' .
+//            DIRECTORY_SEPARATOR .
+//            'yii2-yicms-essences');
 
         parent::init();
     }
@@ -91,9 +92,20 @@ class EssencesModule extends AbstractConfigurableModule implements
     /**
      * @inherited
      */
-    public function isNeedGenerate()
+    public function isGenerated()
     {
-        return false;
+        return !!$this->isGenerated;
+    }
+
+    /**
+     * @inherited
+     */
+    public function setAsGenerated()
+    {
+        $config = EssencesConfigDb::getInstance();
+        $config->isGenerated = true;
+
+        $config->save(false);
     }
 
     /**
