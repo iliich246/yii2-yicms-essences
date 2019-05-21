@@ -2,12 +2,13 @@
 
 namespace Iliich246\YicmsEssences;
 
-use Iliich246\YicmsEssences\Base\EssencesConfigDb;
 use Yii;
 use yii\base\BootstrapInterface;
+use Iliich246\YicmsCommon\CommonModule;
 use Iliich246\YicmsCommon\Base\Generator;
 use Iliich246\YicmsCommon\Base\YicmsModuleInterface;
 use Iliich246\YicmsCommon\Base\AbstractConfigurableModule;
+use Iliich246\YicmsEssences\Base\EssencesConfigDb;
 
 /**
  * Class EssenceModule
@@ -38,16 +39,17 @@ class EssencesModule extends AbstractConfigurableModule implements
      */
     public function init()
     {
-        //TODO: makes correct build of controller map via common->$yicmsLocation
-        $this->controllerMap['admin'] = 'app\yicms\Essences\Controllers\AdminController';
-
-//        Yii::setAlias('@yicms-essences', Yii::getAlias('@vendor') .
-//            DIRECTORY_SEPARATOR .
-//            'iliich246' .
-//            DIRECTORY_SEPARATOR .
-//            'yii2-yicms-essences');
+        Yii::setAlias('@yicms-essences', Yii::getAlias('@vendor') .
+            DIRECTORY_SEPARATOR .
+            'iliich246' .
+            DIRECTORY_SEPARATOR .
+            'yii2-yicms-essences');
 
         parent::init();
+
+        $namespace = CommonModule::getInstance()->yicmsNamespace . '\Essences\Controllers\\';
+
+        $this->controllerMap['admin'] = $namespace . 'AdminController';
     }
 
     /**
