@@ -1,10 +1,7 @@
 <?php
 
-use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\widgets\Pjax;
-use yii\bootstrap\ActiveForm;
-use Iliich246\YicmsEssences\Base\Essences;
+use yii\helpers\Html;
 use Iliich246\YicmsCommon\Fields\FieldTemplate;
 use Iliich246\YicmsCommon\Fields\FieldsDevModalWidget;
 use Iliich246\YicmsCommon\Files\FilesDevModalWidget;
@@ -29,6 +26,9 @@ use Iliich246\YicmsCommon\Conditions\ConditionsDevModalWidget;
 <div class="col-sm-9 content">
     <div class="row content-block content-header">
         <h1>Edit essence (<?= $essence->program_name ?>) represent templates</h1>
+        <?= Html::hiddenInput('globalAnnotateUrl', Url::toRoute(['/essences/dev/annotate', 'id' => $essence->id]), [
+            'id' => 'global-annotate-url'
+        ]) ?>
     </div>
 
     <div class="row content-block breadcrumbs">
