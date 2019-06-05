@@ -66,7 +66,7 @@ $this->registerJs($js, $this::POS_READY);
                 </div>
             </div>
 
-            <?= $this->render('/pjax/update-essences-list-container', [
+            <?= $this->render('@yicms-essences/Views/pjax/update-essences-list-container', [
                 'essences' => $essences
             ]) ?>
         </div>

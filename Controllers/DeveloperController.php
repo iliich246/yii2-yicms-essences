@@ -67,7 +67,7 @@ class DeveloperController extends Controller
             'essence_order' => SORT_ASC
         ])->all();
 
-        return $this->render('/developer/list', [
+        return $this->render('@yicms-essences/Views/developer/list', [
             'essences' => $essences,
         ]);
     }
@@ -91,7 +91,7 @@ class DeveloperController extends Controller
             }
         }
 
-        return $this->render('/developer/create_update_essence', [
+        return $this->render('@yicms-essences/Views/developer/create_update_essence', [
             'essence' => $essence,
         ]);
     }
@@ -124,13 +124,13 @@ class DeveloperController extends Controller
                 $success = false;
             }
 
-            return $this->render('/developer/create_update_essence', [
+            return $this->render('@yicms-essences/Views/developer/create_update_essence', [
                 'essence' => $essence,
                 'success' => $success
             ]);
         }
 
-        return $this->render('/developer/create_update_essence', [
+        return $this->render('@yicms-essences/Views/developer/create_update_essence', [
             'essence' => $essence,
         ]);
     }
@@ -171,14 +171,14 @@ class DeveloperController extends Controller
                 $translateModel->save();
             }
 
-            return $this->render('/developer/essence_translates', [
+            return $this->render('@yicms-essences/Views/developer/essence_translates', [
                 'essence'         => $essence,
                 'translateModels' => $translateModels,
                 'success'         => true,
             ]);
         }
 
-        return $this->render('/developer/essence_translates', [
+        return $this->render('@yicms-essences/Views/developer/essence_translates', [
             'essence'         => $essence,
             'translateModels' => $translateModels,
         ]);
@@ -239,7 +239,7 @@ class DeveloperController extends Controller
             'essence_order' => SORT_ASC
         ])->all();
 
-        return $this->render('/pjax/update-essences-list-container', [
+        return $this->render('@yicms-essences/Views/pjax/update-essences-list-container', [
             'essences' => $essences
         ]);
     }
@@ -267,7 +267,7 @@ class DeveloperController extends Controller
             'essence_order' => SORT_ASC
         ])->all();
 
-        return $this->render('/pjax/update-essences-list-container', [
+        return $this->render('@yicms-essences/Views/pjax/update-essences-list-container', [
             'essences' => $essences
         ]);
     }
@@ -386,7 +386,7 @@ class DeveloperController extends Controller
             ->orderBy([ConditionTemplate::getOrderFieldName() => SORT_ASC])
             ->all();
 
-        return $this->render('/developer/category_templates', [
+        return $this->render('@yicms-essences/Views/developer/category_templates', [
             'essence'                    => $essence,
             'devFieldGroup'              => $devFieldGroup,
             'fieldTemplatesTranslatable' => $fieldTemplatesTranslatable,
@@ -514,7 +514,7 @@ class DeveloperController extends Controller
             ->orderBy([ConditionTemplate::getOrderFieldName() => SORT_ASC])
             ->all();
 
-        return $this->render('/developer/represents_templates', [
+        return $this->render('@yicms-essences/Views/developer/represents_templates', [
             'essence'                    => $essence,
             'devFieldGroup'              => $devFieldGroup,
             'fieldTemplatesTranslatable' => $fieldTemplatesTranslatable,
@@ -539,7 +539,7 @@ class DeveloperController extends Controller
 
         if ($config->load(Yii::$app->request->post()) && $config->validate()) {
             if ($config->save()) {
-                return $this->render('/developer/maintenance', [
+                return $this->render('@yicms-essences/Views/developer/maintenance', [
                     'config'  => $config,
                     'success' => true,
                 ]);
@@ -548,7 +548,7 @@ class DeveloperController extends Controller
             throw new EssencesException('Can`t save data in database');
         }
 
-        return $this->render('/developer/maintenance', [
+        return $this->render('@yicms-essences/Views/developer/maintenance', [
             'config' => $config
         ]);
     }
