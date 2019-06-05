@@ -532,7 +532,10 @@ class DeveloperController extends Controller
      * Action for annotating essence
      * @param $id
      * @return bool
+     * @throws EssencesException
      * @throws NotFoundHttpException
+     * @throws \Iliich246\YicmsCommon\Base\CommonException
+     * @throws \ReflectionException
      */
     public function actionAnnotate($id)
     {

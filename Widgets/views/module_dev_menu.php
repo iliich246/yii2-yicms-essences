@@ -19,7 +19,7 @@ use yii\helpers\Url;
             ||
             ($widget->route == 'essences/dev/update')
         ):?> class="active" <?php endif; ?>
-            href="<?= Url::toRoute('/essences/dev/create') ?>">
+            href="<?= Url::toRoute('/essences/dev/create-essence') ?>">
             Create/update essence
         </a>
         <a <?php if ($widget->route == 'essences/dev/maintenance'): ?> class="active" <?php endif; ?>
