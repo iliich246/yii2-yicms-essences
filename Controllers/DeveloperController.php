@@ -529,6 +529,24 @@ class DeveloperController extends Controller
     }
 
     /**
+     * Action for annotating essence
+     * @param $id
+     * @return bool
+     * @throws NotFoundHttpException
+     */
+    public function actionAnnotate($id)
+    {
+        /** @var Essences $essence */
+        $essence = Essences::findOne($id);
+
+        if (!$essence) throw new NotFoundHttpException('Wrong id = ' . $id);
+
+        $essence->annotate();
+
+        return true;
+    }
+
+    /**
      * Maintenance action for essence module
      * @return string
      * @throws EssencesException
